@@ -4,34 +4,16 @@
 #include "processo.h"
 
 // Escolhe o proximo processo no Round Robin
-int escolherRoundRobin(
-    Processo processos[],
-    int quantidade,
-    int tempoAtual,
-    int *ultimoIndice
-);
+int escolherRoundRobin(Processo processos[], int quantidade, int tempoAtual, int *ultimoIndice);
 
 // Escolhe o processo com maior prioridade
-int escolherPrioridade(
-    Processo processos[],
-    int quantidade,
-    int tempoAtual
-);
+int escolherPrioridade(Processo processos[], int quantidade, int tempoAtual);
 
 // Escolhe um processo por sorteio de bilhetes
-int escolherLoteria(
-    Processo processos[],
-    int quantidade,
-    int tempoAtual,
-    int modoDetalhado
-);
+int escolherLoteria(Processo processos[], int quantidade, int tempoAtual, int modoDetalhado);
 
-// Escolhe o processo com menor vruntime
-int escolherCFS(
-    Processo processos[],
-    int quantidade,
-    int tempoAtual
-);
+// Escolhe o processo com menor tempo virtual no CFS
+int escolherCFS(Processo processos[], int quantidade, int tempoAtual);
 
 // Escolhe qual algoritmo sera usado
 int escolherProcesso(

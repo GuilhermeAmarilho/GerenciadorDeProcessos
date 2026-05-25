@@ -6,12 +6,7 @@
 #include "escalonador.h"
 
 // Escolhe o proximo processo no Round Robin
-int escolherRoundRobin(
-    Processo processos[],
-    int quantidade,
-    int tempoAtual,
-    int *ultimoIndice
-) {
+int escolherRoundRobin(Processo processos[], int quantidade, int tempoAtual, int *ultimoIndice) {
     int contador;
     int indice;
 
@@ -30,11 +25,7 @@ int escolherRoundRobin(
 }
 
 // Escolhe o processo com maior prioridade
-int escolherPrioridade(
-    Processo processos[],
-    int quantidade,
-    int tempoAtual
-) {
+int escolherPrioridade(Processo processos[], int quantidade, int tempoAtual) {
     int i;
     int escolhido = -1;
 
@@ -119,7 +110,6 @@ int escolherLoteria(
             }
         }
     }
-
     return -1;
 }
 
@@ -167,36 +157,22 @@ int escolherProcesso(
     int *ultimoIndiceRR,
     int modoDetalhado
 ) {
-    if (strcmp(algoritmo, "RR") == 0 ||
-        strcmp(algoritmo, "ALTERNANCIA") == 0 ||
-        strcmp(algoritmo, "ALTERNANCIA_CIRCULAR") == 0) {
-
+    if (strcmp(algoritmo, "RR") == 0 || strcmp(algoritmo, "ALTERNANCIA") == 0 || strcmp(algoritmo, "ALTERNANCIA_CIRCULAR") == 0) {
         return escolherRoundRobin(processos, quantidade, tempoAtual, ultimoIndiceRR);
     }
-
     if (strcmp(algoritmo, "PRIORIDADE") == 0) {
         return escolherPrioridade(processos, quantidade, tempoAtual);
     }
-
     if (strcmp(algoritmo, "LOTERIA") == 0) {
         return escolherLoteria(processos, quantidade, tempoAtual, modoDetalhado);
     }
-
     if (strcmp(algoritmo, "CFS") == 0) {
         return escolherCFS(processos, quantidade, tempoAtual);
     }
-
     return -1;
 }
-
 // Executa a simulacao do escalonador
-void executarEscalonador(
-    char algoritmo[],
-    int fatiaCPU,
-    Processo processos[],
-    int quantidade,
-    int modoDetalhado
-) {
+void executarEscalonador(char algoritmo[], int fatiaCPU, Processo processos[], int quantidade, int modoDetalhado) {
     int tempoAtual = 0;
     int ultimoIndiceRR = -1;
     int indiceExecutando;
@@ -213,14 +189,7 @@ void executarEscalonador(
     // Executa enquanto existir processo inacabado
     while (aindaExisteProcesso(processos, quantidade)) {
         // Escolhe o proximo processo
-        indiceExecutando = escolherProcesso(
-            algoritmo,
-            processos,
-            quantidade,
-            tempoAtual,
-            &ultimoIndiceRR,
-            modoDetalhado
-        );
+        indiceExecutando = escolherProcesso(algoritmo, processos, quantidade, tempoAtual, &ultimoIndiceRR, modoDetalhado);
 
         // Se nao houver processo pronto, a CPU fica ociosa
         if (indiceExecutando == -1) {
@@ -249,19 +218,11 @@ void executarEscalonador(
         tempoNaCPU = 0;
 
         // Executa ate acabar a fatia ou o processo terminar
-        while (
-            tempoNaCPU < fatiaCPU &&
-            processos[indiceExecutando].tempoRestante > 0
-        ) {
+        while (tempoNaCPU < fatiaCPU && processos[indiceExecutando].tempoRestante > 0) {
             processos[indiceExecutando].tempoRestante--;
 
             // Atualiza o tempo de espera dos outros processos
-            incrementarTempoPronto(
-                processos,
-                quantidade,
-                tempoAtual,
-                indiceExecutando
-            );
+            incrementarTempoPronto(processos, quantidade, tempoAtual, indiceExecutando);
 
             if (modoDetalhado) {
                 printf("Tempo %d -> %d: PID %d executando | falta %d\n",
