@@ -1,200 +1,241 @@
 # Simulador de Escalonamento de Processos
 
-Este trabalho foi desenvolvido para a disciplina de Sistemas Operacionais.
+Este projeto foi desenvolvido para a disciplina de Sistemas Operacionais.
 
-A ideia do programa é simular o gerenciamento de processos de um pequeno sistema operacional. O programa lê um arquivo `.txt` com os dados dos processos e executa o algoritmo de escalonamento informado na primeira linha do arquivo.
+O objetivo do programa é simular o módulo de gerenciamento de processos de um pequeno sistema operacional. O sistema lê um arquivo de entrada contendo os processos e executa o algoritmo de escalonamento informado na primeira linha do arquivo.
 
-Durante a execução, ele mostra qual processo está usando a CPU, quanto tempo ainda falta para ele terminar e, no final, mostra alguns tempos importantes de cada processo.
+Durante a execução, o programa mostra qual processo está utilizando a CPU em cada momento, quanto tempo ainda falta para ele terminar e, ao final, apresenta uma tabela com os tempos calculados para cada processo.
 
-## Algoritmos feitos
+## Situação do projeto
 
-Neste trabalho foram implementados quatro algoritmos:
+Este projeto foi iniciado na primeira etapa da disciplina com a implementação de um escalonador preemptivo baseado em fatia de CPU.
 
-- Round Robin
-- Prioridade
-- Loteria
-- CFS
+Nesta versão, o programa já possui os seguintes algoritmos de escalonamento:
 
-O Round Robin executa os processos em ordem circular, usando a fatia de CPU informada no arquivo.
+* Alternância Circular / Round Robin
+* Prioridade
+* Loteria
+* CFS
 
-O algoritmo por prioridade escolhe primeiro o processo com maior prioridade. No nosso código, quanto menor o número, maior é a prioridade. Então, por exemplo, prioridade `1` vem antes de prioridade `3`.
+Para a segunda etapa da disciplina, o projeto será reorganizado e adaptado conforme os novos requisitos definidos pelo professor.
 
-A loteria escolhe o processo por sorteio. Cada processo possui uma quantidade de bilhetes, e quanto mais bilhetes ele tem, maior é a chance de ser escolhido. Como tem sorteio, o resultado pode mudar de uma execução para outra.
+## Algoritmos implementados
 
-O CFS usa o valor de `vruntime` para escolher o processo. O processo com menor `vruntime` é escolhido. No nosso código, o último campo do arquivo é usado como peso. Quanto maior o peso, mais devagar o `vruntime` cresce.
+### Alternância Circular / Round Robin
+
+O algoritmo de Alternância Circular executa os processos em ordem circular, respeitando a fatia de CPU definida no arquivo de entrada.
+
+Quando um processo termina sua fatia de CPU e ainda não foi concluído, ele volta para a fila de processos prontos e aguarda uma nova oportunidade de execução.
+
+### Prioridade
+
+O algoritmo por prioridade escolhe o processo pronto com maior prioridade.
+
+Neste projeto, quanto menor o número informado no campo de prioridade, maior é a prioridade do processo. Por exemplo, um processo com prioridade `1` será escolhido antes de um processo com prioridade `3`.
+
+Em caso de empate, o programa utiliza critérios de desempate para manter a execução previsível.
+
+### Loteria
+
+O algoritmo de loteria escolhe o processo por meio de um sorteio.
+
+Cada processo possui uma quantidade de bilhetes. Quanto maior o número de bilhetes, maior a chance de o processo ser escolhido para executar.
+
+Como existe sorteio, os resultados podem variar entre diferentes execuções do programa.
+
+### CFS
+
+O algoritmo CFS foi implementado de forma simplificada.
+
+O programa utiliza o valor de `vruntime` para decidir qual processo será executado. O processo pronto com menor `vruntime` é escolhido.
+
+No código, o último campo do arquivo é usado como peso. Quanto maior o peso, mais lentamente o `vruntime` do processo cresce.
 
 ## Estrutura dos arquivos
 
-O projeto foi dividido em alguns arquivos para deixar o código mais organizado:
+O projeto está organizado da seguinte forma:
 
 ```txt
-SEP/
+GDP/
 │
 ├── main.c
 ├── processo.c
 ├── processo.h
 ├── escalonador.c
 ├── escalonador.h
-│
+├── readme.md
+├── uso_de_IA.md
 └── entradas/
-    ├── entrada_cfs.txt
-    ├── entrada_cpu_ociosa.txt
-    ├── entrada_desempata_prioridade.txt
-    ├── entrada_desempate_cfs.txt
-    ├── entrada_loteria.txt
-    ├── entrada_mista_grande.txt
-    ├── entrada_processos_longos.txt
-    ├── entrada_rr.txt
-    └── entrada_prioridade.txt
+    ├── entrada_alternancia
+    ├── entrada_prioridade
+    ├── entrada_loteria
+    └── entrada_cfs
 ```
 
-- O arquivo main.c é o arquivo principal. Ele recebe o nome do arquivo de entrada, chama a leitura dos processos e depois executa o escalonador.
-- O arquivo processo.h possui a estrutura Processo e as declarações das funções ligadas aos processos.
-- O arquivo processo.c possui funções para ler o arquivo, validar dados, verificar se ainda existem processos e mostrar os resultados finais.
-- O arquivo escalonador.h possui as declarações das funções dos algoritmos de escalonamento.
-- O arquivo escalonador.c possui a implementação dos algoritmos Round Robin, Prioridade, Loteria e CFS.
+### Descrição dos arquivos
+
+* `main.c`: arquivo principal do programa. Recebe o caminho do arquivo de entrada, chama a leitura dos processos e inicia a execução do escalonador.
+* `processo.h`: contém a estrutura `Processo`, constantes do projeto e declarações das funções relacionadas aos processos.
+* `processo.c`: contém funções para leitura do arquivo, validação dos dados, controle dos tempos dos processos e exibição dos resultados finais.
+* `escalonador.h`: contém as declarações das funções dos algoritmos de escalonamento.
+* `escalonador.c`: contém a implementação dos algoritmos de escalonamento e da simulação principal.
+* `entradas/`: pasta que contém os arquivos de entrada utilizados para testar cada algoritmo.
+* `uso_de_IA.md`: arquivo com a descrição do uso de ferramentas de inteligência artificial durante o desenvolvimento do trabalho.
 
 ## Formato do arquivo de entrada
 
-A primeira linha do arquivo indica o algoritmo e a fatia de CPU:
+O arquivo de entrada deve seguir o formato definido pelo professor.
+
+A primeira linha contém o algoritmo de escalonamento e a fatia de CPU:
 
 ```txt
-algoritmo|fatiaDeCPU
+algoritmoDeEscalonamento|fracaoDeCPU
 ```
 
-Depois, cada linha representa um processo:
-
+As linhas seguintes representam os processos:
 
 ```txt
 momentoDeCriacao|PID|tempoDeExecucao|prioridadeOuBilhetes
 ```
 
-Exemplo:
+Onde:
+
+* `algoritmoDeEscalonamento`: algoritmo que será utilizado para escalonar os processos.
+* `fracaoDeCPU`: período máximo que um processo pode permanecer na CPU por vez.
+* `momentoDeCriacao`: tempo em que o processo é criado.
+* `PID`: identificador único do processo.
+* `tempoDeExecucao`: quantidade total de tempo necessária para o processo terminar.
+* `prioridadeOuBilhetes`: prioridade do processo ou quantidade de bilhetes, dependendo do algoritmo utilizado.
+
+## Algoritmos aceitos
+
+O programa aceita os seguintes nomes na primeira linha do arquivo:
 
 ```txt
-RR|2
+RR
+ALTERNANCIA
+ALTERNANCIA_CIRCULAR
+PRIORIDADE
+LOTERIA
+CFS
+```
+
+## Exemplos de arquivos de entrada
+
+### Alternância Circular
+
+```txt
+ALTERNANCIA|2
 0|1|5|1
 0|2|3|1
 2|3|4|1
 4|4|2|1
 ```
 
-Neste exemplo, o algoritmo usado é o Round Robin e a fatia de CPU é 2.
+### Prioridade
 
-O processo de PID 1 é criado no tempo 0, precisa de 5 unidades de tempo para terminar e possui valor 1 no último campo.
+```txt
+PRIORIDADE|2
+0|1|5|2
+0|2|4|1
+2|3|3|3
+```
 
-## Algoritmos aceitos
+### Loteria
 
-O programa aceita os seguintes nomes na primeira linha do arquivo:
+```txt
+LOTERIA|2
+0|1|5|10
+0|2|4|20
+2|3|3|5
+```
 
-- RR
-- ALTERNANCIA
-- ALTERNANCIA_CIRCULAR
-- PRIORIDADE
-- LOTERIA
-- CFS
+### CFS
+
+```txt
+CFS|2
+0|1|5|1
+0|2|4|2
+2|3|3|3
+```
 
 ## Como compilar
 
-Para compilar o programa, entre na pasta do projeto e use:
+Para compilar o programa, entre na pasta do projeto e execute:
 
 ```bash
 gcc main.c processo.c escalonador.c -o escalonador
 ```
 
+Também é possível compilar com avisos adicionais:
+
+```bash
+gcc -Wall -Wextra main.c processo.c escalonador.c -o escalonador
+```
+
 ## Como executar
 
-Para executar, use:
+Para executar o programa, informe o caminho do arquivo de entrada:
 
 ```bash
 ./escalonador caminho_do_arquivo
+```
 
-exemplo....
-./escalonador ./entradas/entrada_rr.txt
+Exemplo:
+
+```bash
+./escalonador ./entradas/entrada_alternancia
 ```
 
 ## Modo silencioso
 
-Também foi criado um modo silencioso. Esse modo não mostra toda a execução passo a passo. Ele mostra apenas o resultado final.
+O programa também possui um modo silencioso.
 
-Para usar:
+Nesse modo, a execução passo a passo não é exibida. O programa mostra apenas o resultado final.
+
+Para usar o modo silencioso:
 
 ```bash
 ./escalonador caminho_do_arquivo silencioso
-
-exemplo....
-./escalonador ./entradas/entrada_loteria.txt silencioso
 ```
 
-Esse modo foi feito porque a saída completa pode ficar muito grande dependendo da quantidade de processos.
+Exemplo:
+
+```bash
+./escalonador ./entradas/entrada_loteria silencioso
+```
 
 ## Exemplos de execução
 
-- Para testar Round Robin:
+Para testar Alternância Circular:
 
 ```bash
-./escalonador ./entradas/entrada_rr.txt
+./escalonador ./entradas/entrada_alternancia
 ```
 
-- Para testar prioridade:
+Para testar Prioridade:
 
 ```bash
-./escalonador ./entradas/entrada_prioridade.txt
+./escalonador ./entradas/entrada_prioridade
 ```
 
-- Para testar loteria:
+Para testar Loteria:
 
 ```bash
-./escalonador ./entradas/entrada_loteria.txt
+./escalonador ./entradas/entrada_loteria
 ```
 
-- Para testar CFS:
+Para testar CFS:
 
 ```bash
-./escalonador ./entradas/entrada_cfs.txt
-```
-
-- Para testar CPU ociosa:
-
-```bash
-./escalonador ./entradas/entrada_cpu_ociosa.txt
-```
-
-- Para testar desempate na prioridade:
-
-```bash
-./escalonador ./entradas/entrada_desempata_prioridade.txt
-```
-
-- Para testar desempate no CFS:
-
-```bash
-./escalonador ./entradas/entrada_desempate_cfs.txt
-```
-
-- Para testar processos mais longos:
-
-```bash
-./escalonador ./entradas/entrada_processos_longos.txt
-```
-
-- Para testar uma entrada maior:
-
-```bash
-./escalonador ./entradas/entrada_mista_grande.txt
-```
-
-- Também é possível usar o modo silencioso em qualquer entrada:
-
-```bash
-./escalonador ./entradas/entrada_mista_grande.txt silencioso
+./escalonador ./entradas/entrada_cfs
 ```
 
 ## O que aparece na saída
 
 Durante a execução normal, o programa mostra quando um processo entra na CPU, quanto tempo ele executa, quanto falta para terminar e quando ele sai da CPU.
 
-Exemplo de saída:
+Exemplo:
 
 ```txt
 Tempo 0: PID 1 entrou na CPU
@@ -203,29 +244,62 @@ Tempo 1 -> 2: PID 1 executando | falta 3
 Tempo 2: PID 1 saiu da CPU
 ```
 
-Quando um processo termina, aparece:
+Quando um processo termina, o programa mostra uma mensagem semelhante a esta:
 
+```txt
 >>> PID 1 terminou no tempo 14
+```
 
-No final, o programa mostra uma tabela com os resultados.
+Ao final da execução, o programa apresenta uma tabela com os resultados de cada processo.
 
 ## Tempos calculados
 
-O programa calcula três tempos principais.
+O programa calcula os seguintes tempos:
 
-O primeiro é o tempo total. Esse tempo vai desde o momento em que o processo foi criado até o momento em que ele terminou.
+### Tempo total
 
-> tempo total = tempo de conclusão - momento de criação
+Representa o tempo entre a criação do processo e sua conclusão.
 
-O segundo é o tempo pronto. Esse é o tempo que o processo ficou esperando para usar a CPU.
+```txt
+tempo total = tempo de conclusao - momento de criacao
+```
 
-O terceiro é o tempo de resposta. Esse é o tempo entre o momento em que o processo foi criado e a primeira vez que ele entrou na CPU.
+### Tempo pronto
 
-> tempo de resposta = primeira execução - momento de criação
+Representa o tempo em que o processo ficou em estado pronto, aguardando para utilizar a CPU.
+
+### Tempo de resposta
+
+Representa o tempo entre a criação do processo e a primeira vez em que ele entrou na CPU.
+
+```txt
+tempo de resposta = primeira execucao - momento de criacao
+```
+
+## Observações sobre a implementação atual
+
+Nesta etapa, um processo somente sai da CPU quando termina sua fatia de tempo ou quando conclui sua execução.
+
+Em etapas futuras, o simulador poderá ser expandido para tratar novas situações, como operações de entrada e saída, bloqueio de processos e novos estados de processo.
+
+## Alterações previstas para a segunda etapa
+
+Para a segunda etapa do trabalho, o projeto será adaptado conforme os novos requisitos da disciplina.
+
+Entre as possíveis alterações estão:
+
+* reorganização dos arquivos de entrada;
+* atualização da documentação;
+* inclusão de novos comportamentos de processos;
+* adaptação da estrutura `Processo`;
+* melhoria do controle de estados dos processos;
+* atualização da lógica principal do escalonador.
+
+Esta seção será atualizada conforme os requisitos finais do segundo bimestre forem definidos.
 
 ## Integrantes
 
-- Antonio Olle Ramos - Matrícula
-- Fernando da Cruz de Mello
-- Guilherme Pereira do Amarilho
-- Yuri Oliveira Serra
+* Antonio Olle Ramos - Matrícula
+* Fernando da Cruz de Mello - Matrícula
+* Guilherme Pereira do Amarilho - Matrícula
+* Yuri Oliveira Serra - Matrícula
