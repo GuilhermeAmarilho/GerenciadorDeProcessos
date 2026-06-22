@@ -27,7 +27,6 @@ A IA não foi usada apenas para copiar uma solução pronta. O código foi sendo
     - Linux Kernel Documentation. CFS Scheduler. Disponível em: https://docs.kernel.org/scheduler/sched-design-CFS.html
     - Essa referência foi usada para entender a ideia geral do CFS, especialmente o uso de uma lógica voltada à distribuição justa da CPU.
 
-
 ## Prompts usados
 
 Durante o desenvolvimento do trabalho, foram utilizados prompts com diferentes objetivos, como geração inicial do código, melhoria da lógica, organização dos arquivos, criação de testes e documentação. Abaixo estão alguns exemplos reescritos de forma mais clara e objetiva.
@@ -62,3 +61,33 @@ Durante o desenvolvimento do trabalho, foram utilizados prompts com diferentes o
 ### Agrupando os prompts 
 
 - "Vamos compactar todos os meus prompts em um read.me novo, para a entrega final, para isso, preciso que você me envie todos eles revisados na ordem que foram feitos"
+
+---
+
+## 2ª Atividade
+
+Na segunda parte do trabalho, a ferramenta também foi utilizada como apoio para adaptar o projeto de escalonamento já existente para incluir o gerenciamento de memória e os algoritmos de substituição de páginas.
+
+### Planejamento dos algoritmos de memória
+
+- “Me ajude a planejar como integrar os algoritmos FIFO, LRU, NUF e Ótimo ao escalonador já desenvolvido na primeira parte do trabalho.”
+
+### Criação de entradas de teste
+
+- "Crie versões de arquivos de entrada que permitam testar: situações sem troca de páginas; diferenças entre FIFO, LRU, NUF e Ótimo; empate entre os algoritmos; políticas de memória local e global; desempate do NUF pela página de menor ID; percentual de alocação com resultado não inteiro; processos criados em momentos diferentes; funcionamento dos escalonadores por prioridade, loteria e CFS junto com a memória; política de memória inválida; e PIDs repetidos."
+
+### Revisão de erros de compilação
+
+- “Analise as mensagens de erro e avisos apresentados pelo compilador e ajudar a encontrar qual parte do código que precisa ser corrigidas.”
+
+### Revisão de memória dinâmica
+
+- “Verifique onde os vetores e estruturas alocados com malloc precisam ser liberados para evitar vazamentos de memória.”
+
+### Explicação das políticas de memória
+
+- "Explique a diferença entre política local e política global e mostre como cada uma afeta a escolha das páginas que podem ser substituídas."
+
+### Interpretação dos resultados
+
+- "Me ajude a exmplicar e interpretar a linha final produzida pelo programa e como identificar qual algoritmo ficou mais próximo do algoritmo Ótimo."
