@@ -1,9 +1,6 @@
 #ifndef PROCESSO_H
 #define PROCESSO_H
 
-// Tamanho maximo de uma linha do arquivo
-#define TAM_LINHA 200
-
 // Estados que um processo pode ter
 typedef enum {
     PROCESSO_FUTURO,
@@ -12,30 +9,42 @@ typedef enum {
     PROCESSO_FINALIZADO
 } EstadoProcesso;
 
-// Representa um processo do simulador
+// Guarda todas as informacoes de um processo
 typedef struct Processo {
-    // Tempo em que o processo aparece no sistema
+    // Momento em que o processo entra no sistema
     int momentoCriacao;
 
-    // Identificador unico do processo
+    // Numero usado para identificar o processo
     int pid;
 
-    // Tempo total que ele precisa executar
+    // Tempo total que o processo precisa usar a CPU
     int tempoExecucao;
 
-    // Prioridade, bilhetes ou peso
+    // Pode ser prioridade, bilhetes ou peso
     int prioridadeOuBilhetes;
 
-    // Tempo que ainda falta para terminar
+    // Quantidade de memoria que o processo precisa
+    int quantidadeMemoria;
+
+    // Ordem das paginas que o processo vai acessar
+    int *sequenciaPaginas;
+
+    // Quantidade de acessos que existem na sequencia
+    int quantidadeAcessos;
+
+    // Posicao do proximo acesso que vai ser feito
+    int proximoAcesso;
+
+    // Tempo que ainda falta para o processo terminar
     int tempoRestante;
 
-    // Tempo em que ele terminou
+    // Momento em que o processo terminou
     int tempoConclusao;
 
-    // Tempo que ficou esperando a CPU
+    // Tempo que o processo ficou esperando na fila
     int tempoPronto;
 
-    // Primeira vez que entrou na CPU
+    // Momento em que ele entrou na CPU pela primeira vez
     int primeiraExecucao;
 
     // Tempo entre a criacao e a primeira execucao
@@ -48,28 +57,21 @@ typedef struct Processo {
     EstadoProcesso estado;
 } Processo;
 
-// Avisando que existe uma estrutura de arvore
-// A estrutura completa fica no arquivo da arvore
+// A estrutura completa da arvore fica em outro arquivo
 typedef struct ArvoreRN ArvoreRN;
 
-// Remove a quebra de linha de uma string
-void removerQuebraLinha(char texto[]);
-
-// Converte uma string para maiusculo
-void paraMaiusculo(char texto[]);
-
-// Verifica se o algoritmo informado existe
-int algoritmoValido(char algoritmo[]);
-
-// Cria um processo novo na memoria
+// Cria um processo novo
 Processo *criarProcesso(
     int momentoCriacao,
     int pid,
     int tempoExecucao,
-    int prioridadeOuBilhetes
+    int prioridadeOuBilhetes,
+    int quantidadeMemoria,
+    int sequenciaPaginas[],
+    int quantidadeAcessos
 );
 
-// Libera um processo da memoria
+// Libera o processo e a sequencia de paginas
 void destruirProcesso(Processo *processo);
 
 // Verifica se o processo ja pode entrar na fila de prontos
@@ -93,21 +95,10 @@ void finalizarProcesso(
     int tempoAtual
 );
 
-// Soma um tempo no estado pronto
+// Soma um ciclo no tempo de espera
 void incrementarTempoPronto(Processo *processo);
 
-// Mostra os resultados finais
-// A arvore deve estar organizada por PID
+// Mostra os resultados finais dos processos
 void mostrarResultadoFinal(ArvoreRN *processosPorPid);
-
-// Le o arquivo e coloca os processos nas arvores
-int carregarArquivo(
-    char nomeArquivo[],
-    char algoritmo[],
-    int *fatiaCPU,
-    ArvoreRN *processosPorPid,
-    ArvoreRN *processosFuturos,
-    int *quantidade
-);
 
 #endif

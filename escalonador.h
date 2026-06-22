@@ -1,6 +1,9 @@
 #ifndef ESCALONADOR_H
 #define ESCALONADOR_H
+
 #include "processo.h"
+#include "configuracao.h"
+#include "memoria.h"
 #include "arvore_rubro_negra.h"
 
 // No usado na fila do Round Robin
@@ -24,37 +27,38 @@ typedef struct {
     int quantidade;
 } FilaRR;
 
-// Junta as estruturas usadas durante a simulacao
+// Junta tudo que o escalonador usa durante a simulacao
 typedef struct {
     // Arvore com todos os processos
     // Ela fica organizada por PID
     ArvoreRN *processosPorPid;
 
-    // Processos que ainda nao chegaram
+    // Processos que ainda nao chegaram no sistema
     ArvoreRN *processosFuturos;
 
-    // Processos que ja podem executar
+    // Processos que ja podem usar a CPU
     ArvoreRN processosProntos;
 
     // Fila usada somente no Round Robin
     FilaRR filaRoundRobin;
 
-    // Processo que esta usando a CPU
+    // Processo que esta usando a CPU agora
     Processo *processoExecutando;
 
-    // Nome do algoritmo atual
-    char algoritmo[50];
+    // Configuracao que veio da primeira linha do arquivo
+    const ConfiguracaoSistema *configuracao;
 
-    // Tempo que cada processo pode ficar na CPU
-    int fatiaCPU;
+    // Guarda todos os acessos de memoria na ordem
+    // em que aconteceram durante o escalonamento
+    HistoricoAcessos *historicoAcessos;
 
-    // Relogio da simulacao
+    // Relogio atual da simulacao
     int tempoAtual;
 
     // Quantidade total de processos
     int quantidadeTotal;
 
-    // Quantidade de processos que terminaram
+    // Quantidade de processos que ja terminaram
     int quantidadeFinalizados;
 
     // Mostra ou esconde os detalhes da execucao
@@ -62,10 +66,14 @@ typedef struct {
 } Escalonador;
 
 // Prepara uma fila vazia
-void inicializarFilaRoundRobin(FilaRR *fila);
+void inicializarFilaRoundRobin(
+    FilaRR *fila
+);
 
 // Verifica se a fila esta vazia
-int filaRoundRobinEstaVazia(FilaRR *fila);
+int filaRoundRobinEstaVazia(
+    FilaRR *fila
+);
 
 // Coloca um processo no final da fila
 int colocarNaFilaRoundRobin(
@@ -74,26 +82,30 @@ int colocarNaFilaRoundRobin(
 );
 
 // Retira o primeiro processo da fila
-Processo *retirarDaFilaRoundRobin(FilaRR *fila);
+Processo *retirarDaFilaRoundRobin(
+    FilaRR *fila
+);
 
 // Libera os nos usados pela fila
 // Os processos nao sao liberados aqui
-void destruirFilaRoundRobin(FilaRR *fila);
-
-// Escolhe a ordenacao da arvore de prontos
-TipoOrdenacaoArvore escolherOrdenacaoDosProntos(
-    char algoritmo[]
+void destruirFilaRoundRobin(
+    FilaRR *fila
 );
 
-// Prepara as estruturas usadas pelo escalonador
+// Escolhe a ordem da arvore de processos prontos
+TipoOrdenacaoArvore escolherOrdenacaoDosProntos(
+    const char algoritmo[]
+);
+
+// Prepara tudo que o escalonador vai usar
 int inicializarEscalonador(
     Escalonador *escalonador,
-    char algoritmo[],
-    int fatiaCPU,
+    const ConfiguracaoSistema *configuracao,
     ArvoreRN *processosPorPid,
     ArvoreRN *processosFuturos,
     int quantidadeTotal,
-    int modoDetalhado
+    int modoDetalhado,
+    HistoricoAcessos *historicoAcessos
 );
 
 // Move os processos que chegaram para o estado pronto
@@ -132,7 +144,10 @@ void atualizarTempoDosProcessosProntos(
 );
 
 // Executa uma fatia de CPU
-void executarFatiaDeCPU(
+// Tambem registra um acesso de memoria em cada ciclo
+// Retorna 1 se deu certo
+// Retorna 0 se aconteceu algum erro
+int executarFatiaDeCPU(
     Escalonador *escalonador,
     Processo *processo
 );
@@ -145,16 +160,21 @@ int devolverProcessoParaProntos(
 
 // Libera as estruturas internas do escalonador
 // Nao libera as arvores recebidas pelo main
-void destruirEscalonador(Escalonador *escalonador);
+// Tambem nao libera o historico de acessos
+void destruirEscalonador(
+    Escalonador *escalonador
+);
 
 // Executa a simulacao inteira
-void executarEscalonador(
-    char algoritmo[],
-    int fatiaCPU,
+// Retorna 1 se terminou normalmente
+// Retorna 0 se aconteceu algum erro
+int executarEscalonador(
+    const ConfiguracaoSistema *configuracao,
     ArvoreRN *processosPorPid,
     ArvoreRN *processosFuturos,
     int quantidadeTotal,
-    int modoDetalhado
+    int modoDetalhado,
+    HistoricoAcessos *historicoAcessos
 );
 
 #endif

@@ -120,7 +120,9 @@ static void atualizarSomaDoNo(
 
     somaEsquerda = no->esquerda->somaBilhetesSubarvore;
     somaDireita = no->direita->somaBilhetesSubarvore;
-    bilhetesDoNo = obterQuantidadeBilhetesDoProcesso(no->processo);
+    bilhetesDoNo = obterQuantidadeBilhetesDoProcesso(
+        no->processo
+    );
 
     no->somaBilhetesSubarvore =
         somaEsquerda +
@@ -138,7 +140,11 @@ static void atualizarSomasAteRaiz(
     atual = no;
 
     while (atual != arvore->nulo) {
-        atualizarSomaDoNo(arvore, atual);
+        atualizarSomaDoNo(
+            arvore,
+            atual
+        );
+
         atual = atual->pai;
     }
 }
@@ -165,7 +171,9 @@ static NoRN *criarNo(
     novoNo->direita = arvore->nulo;
 
     novoNo->somaBilhetesSubarvore =
-        obterQuantidadeBilhetesDoProcesso(processo);
+        obterQuantidadeBilhetesDoProcesso(
+            processo
+        );
 
     return novoNo;
 }
@@ -203,8 +211,15 @@ static void rotacionarEsquerda(
     no->pai = filhoDireito;
 
     // Depois da rotacao tem que arrumar as somas
-    atualizarSomaDoNo(arvore, no);
-    atualizarSomaDoNo(arvore, filhoDireito);
+    atualizarSomaDoNo(
+        arvore,
+        no
+    );
+
+    atualizarSomaDoNo(
+        arvore,
+        filhoDireito
+    );
 }
 
 // Faz uma rotacao para a direita
@@ -240,8 +255,15 @@ static void rotacionarDireita(
     no->pai = filhoEsquerdo;
 
     // Depois da rotacao tem que arrumar as somas
-    atualizarSomaDoNo(arvore, no);
-    atualizarSomaDoNo(arvore, filhoEsquerdo);
+    atualizarSomaDoNo(
+        arvore,
+        no
+    );
+
+    atualizarSomaDoNo(
+        arvore,
+        filhoEsquerdo
+    );
 }
 
 // Arruma as cores depois de inserir
@@ -269,7 +291,11 @@ static void corrigirInsercao(
                 // O no esta fazendo um formato meio torto
                 if (no == no->pai->direita) {
                     no = no->pai;
-                    rotacionarEsquerda(arvore, no);
+
+                    rotacionarEsquerda(
+                        arvore,
+                        no
+                    );
                 }
 
                 no->pai->cor = PRETO;
@@ -294,7 +320,11 @@ static void corrigirInsercao(
             } else {
                 if (no == no->pai->esquerda) {
                     no = no->pai;
-                    rotacionarDireita(arvore, no);
+
+                    rotacionarDireita(
+                        arvore,
+                        no
+                    );
                 }
 
                 no->pai->cor = PRETO;
@@ -488,7 +518,9 @@ static void destruirNos(
 
     // So libera o processo se foi pedido
     if (liberarProcessos == 1) {
-        free(no->processo);
+        destruirProcesso(
+            no->processo
+        );
     }
 
     free(no);
@@ -962,7 +994,9 @@ int removerProcessoDaArvore(
 }
 
 // Retorna a quantidade total de bilhetes
-long long obterTotalBilhetes(ArvoreRN *arvore) {
+long long obterTotalBilhetes(
+    ArvoreRN *arvore
+) {
     if (arvoreEstaVazia(arvore)) {
         return 0;
     }
@@ -985,7 +1019,9 @@ Processo *buscarProcessoPorBilhete(
         return NULL;
     }
 
-    totalBilhetes = obterTotalBilhetes(arvore);
+    totalBilhetes = obterTotalBilhetes(
+        arvore
+    );
 
     // O bilhete precisa estar dentro do total
     if (

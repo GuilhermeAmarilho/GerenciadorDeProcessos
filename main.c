@@ -2,30 +2,41 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include "configuracao.h"
+#include "entrada.h"
 #include "processo.h"
 #include "arvore_rubro_negra.h"
 #include "escalonador.h"
+#include "memoria.h"
 
 int main(int argc, char *argv[]) {
+    ConfiguracaoSistema configuracao;
+
     ArvoreRN processosPorPid;
     ArvoreRN processosFuturos;
 
-    char algoritmo[50];
+    HistoricoAcessos historicoAcessos;
+    ResultadoMemoria resultadoMemoria;
 
-    int fatiaCPU;
-    int quantidade;
+    int quantidadeProcessos;
     int modoDetalhado;
+
     int carregouArquivo;
+    int iniciouHistorico;
+    int executouEscalonador;
+    int executouMemoria;
 
     // Por padrao mostra tudo que esta acontecendo
     modoDetalhado = 1;
 
-    // Faz a loteria gerar resultados diferentes
+    quantidadeProcessos = 0;
+
+    // Faz a loteria mudar de resultado entre as execucoes
     srand(
         (unsigned int) time(NULL)
     );
 
-    // Precisa passar pelo menos o arquivo de entrada
+    // Precisa informar pelo menos o arquivo de entrada
     if (argc < 2) {
         printf("Uso correto:\n");
         printf("./escalonador entrada.txt\n");
@@ -55,8 +66,8 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    // Essa arvore guarda todos os processos
-    // Ela tambem serve para procurar PID repetido
+    // Essa arvore guarda todos os processos por PID
+    // Ela tambem ajuda a perceber PID repetido
     inicializarArvore(
         &processosPorPid,
         ORDENAR_POR_PID
@@ -68,7 +79,7 @@ int main(int argc, char *argv[]) {
         ORDENAR_POR_CRIACAO
     );
 
-    // Confere se as arvores conseguiram criar o no nulo
+    // Confere se as duas arvores foram criadas
     if (
         processosPorPid.nulo == NULL ||
         processosFuturos.nulo == NULL
@@ -77,7 +88,6 @@ int main(int argc, char *argv[]) {
             "Erro: nao foi possivel criar as arvores.\n"
         );
 
-        // Pode chamar mesmo se uma delas deu erro
         destruirArvore(
             &processosFuturos,
             0
@@ -91,19 +101,16 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // Le o arquivo e coloca os processos nas arvores
+    // Le a configuracao e os processos do arquivo
     carregouArquivo = carregarArquivo(
         argv[1],
-        algoritmo,
-        &fatiaCPU,
+        &configuracao,
         &processosPorPid,
         &processosFuturos,
-        &quantidade
+        &quantidadeProcessos
     );
 
     if (!carregouArquivo) {
-        // Em alguns erros o carregarArquivo ja limpou as arvores
-        // A funcao destruirArvore aceita isso sem problema
         destruirArvore(
             &processosFuturos,
             0
@@ -117,8 +124,8 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // Nao tem nada para executar
-    if (quantidade == 0) {
+    // So para garantir que tem alguma coisa para executar
+    if (quantidadeProcessos <= 0) {
         printf(
             "Erro: nenhum processo foi carregado.\n"
         );
@@ -136,25 +143,174 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // Comeca a simulacao
-    executarEscalonador(
-        algoritmo,
-        fatiaCPU,
-        &processosPorPid,
-        &processosFuturos,
-        quantidade,
-        modoDetalhado
+    // Prepara o vetor que vai guardar os acessos de memoria
+    iniciouHistorico = inicializarHistoricoAcessos(
+        &historicoAcessos
     );
 
-    // A arvore de futuros nao libera os processos
-    // Eles tambem estao guardados na arvore por PID
+    if (!iniciouHistorico) {
+        printf(
+            "Erro: nao foi possivel criar o historico de acessos.\n"
+        );
+
+        destruirArvore(
+            &processosFuturos,
+            0
+        );
+
+        destruirArvore(
+            &processosPorPid,
+            1
+        );
+
+        return 1;
+    }
+
+    if (modoDetalhado) {
+        printf(
+            "\n================ CONFIGURACAO ================\n"
+        );
+
+        printf(
+            "Algoritmo de escalonamento: %s\n",
+            configuracao.algoritmoEscalonamento
+        );
+
+        printf(
+            "Fatia de CPU: %d\n",
+            configuracao.fatiaCPU
+        );
+
+        if (
+            configuracao.politicaMemoria ==
+            POLITICA_LOCAL
+        ) {
+            printf(
+                "Politica de memoria: LOCAL\n"
+            );
+        } else {
+            printf(
+                "Politica de memoria: GLOBAL\n"
+            );
+        }
+
+        printf(
+            "Tamanho da memoria: %d bytes\n",
+            configuracao.tamanhoMemoria
+        );
+
+        printf(
+            "Tamanho da pagina e moldura: %d bytes\n",
+            configuracao.tamanhoPaginaMoldura
+        );
+
+        printf(
+            "Quantidade total de molduras: %d\n",
+            configuracao.tamanhoMemoria /
+            configuracao.tamanhoPaginaMoldura
+        );
+
+        printf(
+            "Percentual de alocacao: %d%%\n",
+            configuracao.percentualAlocacao
+        );
+
+        printf(
+            "Quantidade de processos: %d\n",
+            quantidadeProcessos
+        );
+    }
+
+    // Executa os processos e monta a ordem dos acessos
+    executouEscalonador = executarEscalonador(
+        &configuracao,
+        &processosPorPid,
+        &processosFuturos,
+        quantidadeProcessos,
+        modoDetalhado,
+        &historicoAcessos
+    );
+
+    if (!executouEscalonador) {
+        printf(
+            "Erro: o escalonador nao terminou direito.\n"
+        );
+
+        destruirHistoricoAcessos(
+            &historicoAcessos
+        );
+
+        destruirArvore(
+            &processosFuturos,
+            0
+        );
+
+        destruirArvore(
+            &processosPorPid,
+            1
+        );
+
+        return 1;
+    }
+
+    if (modoDetalhado) {
+        printf(
+            "\nQuantidade de acessos de memoria: %d\n",
+            historicoAcessos.quantidade
+        );
+
+        printf(
+            "\n================ ALGORITMOS DE MEMORIA ================\n"
+        );
+    }
+
+    // Executa os quatro algoritmos com o mesmo historico
+    executouMemoria = executarAlgoritmosMemoria(
+        &historicoAcessos,
+        &configuracao,
+        &processosPorPid,
+        &resultadoMemoria
+    );
+
+    if (!executouMemoria) {
+        printf(
+            "Erro: os algoritmos de memoria nao terminaram direito.\n"
+        );
+
+        destruirHistoricoAcessos(
+            &historicoAcessos
+        );
+
+        destruirArvore(
+            &processosFuturos,
+            0
+        );
+
+        destruirArvore(
+            &processosPorPid,
+            1
+        );
+
+        return 1;
+    }
+
+    // Essa precisa ser a ultima linha da saida
+    mostrarResultadoMemoria(
+        &resultadoMemoria
+    );
+
+    // Libera o vetor com os acessos
+    destruirHistoricoAcessos(
+        &historicoAcessos
+    );
+
+    // A arvore de futuros nao e dona dos processos
     destruirArvore(
         &processosFuturos,
         0
     );
 
-    // Essa e a arvore dona dos processos
-    // Por isso ela libera os nos e os processos
+    // A arvore por PID e a dona dos processos
     destruirArvore(
         &processosPorPid,
         1

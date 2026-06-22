@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "processo.h"
-#include "arvore_rubro_negra.h"
 #include "escalonador.h"
 
 // Verifica se o algoritmo escolhido e Round Robin
-static int algoritmoEhRoundRobin(char algoritmo[]) {
+static int algoritmoEhRoundRobin(
+    const char algoritmo[]
+) {
     if (algoritmo == NULL) {
         return 0;
     }
@@ -79,7 +79,9 @@ static long long gerarNumeroAleatorioGrande(void) {
 }
 
 // Sorteia um bilhete entre 1 e o total
-static long long sortearBilhete(long long totalBilhetes) {
+static long long sortearBilhete(
+    long long totalBilhetes
+) {
     long long numeroAleatorio;
     long long bilhete;
 
@@ -96,7 +98,9 @@ static long long sortearBilhete(long long totalBilhetes) {
 }
 
 // Prepara uma fila vazia
-void inicializarFilaRoundRobin(FilaRR *fila) {
+void inicializarFilaRoundRobin(
+    FilaRR *fila
+) {
     if (fila == NULL) {
         return;
     }
@@ -107,7 +111,9 @@ void inicializarFilaRoundRobin(FilaRR *fila) {
 }
 
 // Verifica se a fila esta vazia
-int filaRoundRobinEstaVazia(FilaRR *fila) {
+int filaRoundRobinEstaVazia(
+    FilaRR *fila
+) {
     if (fila == NULL) {
         return 1;
     }
@@ -157,7 +163,9 @@ int colocarNaFilaRoundRobin(
 }
 
 // Retira o primeiro processo da fila
-Processo *retirarDaFilaRoundRobin(FilaRR *fila) {
+Processo *retirarDaFilaRoundRobin(
+    FilaRR *fila
+) {
     NoFilaRR *primeiroNo;
     Processo *processo;
 
@@ -183,7 +191,9 @@ Processo *retirarDaFilaRoundRobin(FilaRR *fila) {
 }
 
 // Libera os nos da fila
-void destruirFilaRoundRobin(FilaRR *fila) {
+void destruirFilaRoundRobin(
+    FilaRR *fila
+) {
     Processo *processo;
 
     if (fila == NULL) {
@@ -205,7 +215,7 @@ void destruirFilaRoundRobin(FilaRR *fila) {
 
 // Escolhe como a arvore de prontos vai ficar organizada
 TipoOrdenacaoArvore escolherOrdenacaoDosProntos(
-    char algoritmo[]
+    const char algoritmo[]
 ) {
     if (algoritmo == NULL) {
         return ORDENAR_POR_PID;
@@ -226,25 +236,26 @@ TipoOrdenacaoArvore escolherOrdenacaoDosProntos(
 // Prepara tudo que o escalonador vai usar
 int inicializarEscalonador(
     Escalonador *escalonador,
-    char algoritmo[],
-    int fatiaCPU,
+    const ConfiguracaoSistema *configuracao,
     ArvoreRN *processosPorPid,
     ArvoreRN *processosFuturos,
     int quantidadeTotal,
-    int modoDetalhado
+    int modoDetalhado,
+    HistoricoAcessos *historicoAcessos
 ) {
     TipoOrdenacaoArvore ordenacao;
 
     if (
         escalonador == NULL ||
-        algoritmo == NULL ||
+        configuracao == NULL ||
         processosPorPid == NULL ||
-        processosFuturos == NULL
+        processosFuturos == NULL ||
+        historicoAcessos == NULL
     ) {
         return 0;
     }
 
-    if (fatiaCPU <= 0) {
+    if (configuracao->fatiaCPU <= 0) {
         return 0;
     }
 
@@ -252,7 +263,10 @@ int inicializarEscalonador(
         return 0;
     }
 
-    if (strlen(algoritmo) >= sizeof(escalonador->algoritmo)) {
+    if (
+        historicoAcessos->acessos == NULL ||
+        historicoAcessos->capacidade <= 0
+    ) {
         return 0;
     }
 
@@ -261,12 +275,9 @@ int inicializarEscalonador(
 
     escalonador->processoExecutando = NULL;
 
-    strcpy(
-        escalonador->algoritmo,
-        algoritmo
-    );
+    escalonador->configuracao = configuracao;
+    escalonador->historicoAcessos = historicoAcessos;
 
-    escalonador->fatiaCPU = fatiaCPU;
     escalonador->tempoAtual = 0;
 
     escalonador->quantidadeTotal = quantidadeTotal;
@@ -279,7 +290,7 @@ int inicializarEscalonador(
     );
 
     ordenacao = escolherOrdenacaoDosProntos(
-        algoritmo
+        configuracao->algoritmoEscalonamento
     );
 
     inicializarArvore(
@@ -305,7 +316,10 @@ int moverProcessosQueChegaram(
     int colocouNaArvore;
     int colocouNaFila;
 
-    if (escalonador == NULL) {
+    if (
+        escalonador == NULL ||
+        escalonador->configuracao == NULL
+    ) {
         return 0;
     }
 
@@ -387,7 +401,7 @@ int moverProcessosQueChegaram(
         // Round Robin tambem precisa colocar na fila
         if (
             algoritmoEhRoundRobin(
-                escalonador->algoritmo
+                escalonador->configuracao->algoritmoEscalonamento
             )
         ) {
             colocouNaFila = colocarNaFilaRoundRobin(
@@ -566,48 +580,37 @@ Processo *escolherCFS(
 Processo *escolherProximoProcesso(
     Escalonador *escalonador
 ) {
-    if (escalonador == NULL) {
+    const char *algoritmo;
+
+    if (
+        escalonador == NULL ||
+        escalonador->configuracao == NULL
+    ) {
         return NULL;
     }
 
-    if (
-        algoritmoEhRoundRobin(
-            escalonador->algoritmo
-        )
-    ) {
+    algoritmo =
+        escalonador->configuracao->algoritmoEscalonamento;
+
+    if (algoritmoEhRoundRobin(algoritmo)) {
         return escolherRoundRobin(
             escalonador
         );
     }
 
-    if (
-        strcmp(
-            escalonador->algoritmo,
-            "PRIORIDADE"
-        ) == 0
-    ) {
+    if (strcmp(algoritmo, "PRIORIDADE") == 0) {
         return escolherPrioridade(
             escalonador
         );
     }
 
-    if (
-        strcmp(
-            escalonador->algoritmo,
-            "LOTERIA"
-        ) == 0
-    ) {
+    if (strcmp(algoritmo, "LOTERIA") == 0) {
         return escolherLoteria(
             escalonador
         );
     }
 
-    if (
-        strcmp(
-            escalonador->algoritmo,
-            "CFS"
-        ) == 0
-    ) {
+    if (strcmp(algoritmo, "CFS") == 0) {
         return escolherCFS(
             escalonador
         );
@@ -617,7 +620,6 @@ Processo *escolherProximoProcesso(
 }
 
 // Essa funcao ficou aqui porque esta no arquivo .h
-// Nao precisa mais percorrer todos os processos a cada tempo
 // O tempo pronto e calculado quando o processo termina
 void atualizarTempoDosProcessosProntos(
     Escalonador *escalonador
@@ -640,6 +642,7 @@ int devolverProcessoParaProntos(
 
     if (
         escalonador == NULL ||
+        escalonador->configuracao == NULL ||
         processo == NULL
     ) {
         return 0;
@@ -668,7 +671,7 @@ int devolverProcessoParaProntos(
     // No Round Robin volta para o fim da fila
     if (
         algoritmoEhRoundRobin(
-            escalonador->algoritmo
+            escalonador->configuracao->algoritmoEscalonamento
         )
     ) {
         colocouNaFila = colocarNaFilaRoundRobin(
@@ -695,19 +698,30 @@ int devolverProcessoParaProntos(
 }
 
 // Executa uma fatia de CPU
-void executarFatiaDeCPU(
+// Cada ciclo tambem gera um acesso de memoria
+int executarFatiaDeCPU(
     Escalonador *escalonador,
     Processo *processo
 ) {
     int tempoNaCPU;
+    int paginaAtual;
+    int registrouAcesso;
+
     double peso;
+
+    const char *algoritmo;
 
     if (
         escalonador == NULL ||
+        escalonador->configuracao == NULL ||
+        escalonador->historicoAcessos == NULL ||
         processo == NULL
     ) {
-        return;
+        return 0;
     }
+
+    algoritmo =
+        escalonador->configuracao->algoritmoEscalonamento;
 
     escalonador->processoExecutando = processo;
 
@@ -734,17 +748,62 @@ void executarFatiaDeCPU(
     tempoNaCPU = 0;
 
     while (
-        tempoNaCPU < escalonador->fatiaCPU &&
+        tempoNaCPU <
+        escalonador->configuracao->fatiaCPU &&
         processo->tempoRestante > 0
     ) {
+        // Confere se ainda existe uma pagina para acessar
+        if (
+            processo->sequenciaPaginas == NULL ||
+            processo->proximoAcesso < 0 ||
+            processo->proximoAcesso >=
+            processo->quantidadeAcessos
+        ) {
+            printf(
+                "Erro: o PID %d ficou sem pagina para acessar.\n",
+                processo->pid
+            );
+
+            escalonador->processoExecutando = NULL;
+
+            return 0;
+        }
+
+        // Pega a proxima pagina da sequencia
+        paginaAtual =
+            processo->sequenciaPaginas[
+                processo->proximoAcesso
+            ];
+
+        // Cada ciclo de CPU faz um acesso de memoria
+        registrouAcesso = registrarAcessoMemoria(
+            escalonador->historicoAcessos,
+            escalonador->tempoAtual,
+            processo->pid,
+            paginaAtual
+        );
+
+        if (!registrouAcesso) {
+            printf(
+                "Erro ao guardar o acesso de memoria do PID %d.\n",
+                processo->pid
+            );
+
+            escalonador->processoExecutando = NULL;
+
+            return 0;
+        }
+
+        processo->proximoAcesso++;
         processo->tempoRestante--;
 
         if (escalonador->modoDetalhado) {
             printf(
-                "Tempo %d -> %d: PID %d executando | falta %d\n",
+                "Tempo %d -> %d: PID %d executando | pagina %d | falta %d\n",
                 escalonador->tempoAtual,
                 escalonador->tempoAtual + 1,
                 processo->pid,
+                paginaAtual,
                 processo->tempoRestante
             );
         }
@@ -753,12 +812,7 @@ void executarFatiaDeCPU(
         tempoNaCPU++;
 
         // O CFS muda o vruntime enquanto executa
-        if (
-            strcmp(
-                escalonador->algoritmo,
-                "CFS"
-            ) == 0
-        ) {
+        if (strcmp(algoritmo, "CFS") == 0) {
             peso = processo->prioridadeOuBilhetes;
 
             if (peso <= 0.0) {
@@ -780,10 +834,9 @@ void executarFatiaDeCPU(
                 "Erro ao mover os processos que chegaram.\n"
             );
 
-            escalonador->quantidadeFinalizados = -1;
             escalonador->processoExecutando = NULL;
 
-            return;
+            return 0;
         }
     }
 
@@ -797,6 +850,21 @@ void executarFatiaDeCPU(
 
     // O processo acabou
     if (processoTerminou(processo)) {
+        // Confere se usou toda a sequencia
+        if (
+            processo->proximoAcesso !=
+            processo->quantidadeAcessos
+        ) {
+            printf(
+                "Erro: o PID %d terminou com acessos de memoria sobrando.\n",
+                processo->pid
+            );
+
+            escalonador->processoExecutando = NULL;
+
+            return 0;
+        }
+
         finalizarProcesso(
             processo,
             escalonador->tempoAtual
@@ -834,18 +902,21 @@ void executarFatiaDeCPU(
                 processo->pid
             );
 
-            escalonador->quantidadeFinalizados = -1;
             escalonador->processoExecutando = NULL;
 
-            return;
+            return 0;
         }
     }
 
     escalonador->processoExecutando = NULL;
+
+    return 1;
 }
 
 // Libera as partes internas do escalonador
-void destruirEscalonador(Escalonador *escalonador) {
+void destruirEscalonador(
+    Escalonador *escalonador
+) {
     if (escalonador == NULL) {
         return;
     }
@@ -865,18 +936,23 @@ void destruirEscalonador(Escalonador *escalonador) {
     escalonador->processosFuturos = NULL;
     escalonador->processoExecutando = NULL;
 
+    escalonador->configuracao = NULL;
+    escalonador->historicoAcessos = NULL;
+
+    escalonador->tempoAtual = 0;
     escalonador->quantidadeTotal = 0;
     escalonador->quantidadeFinalizados = 0;
+    escalonador->modoDetalhado = 0;
 }
 
 // Executa a simulacao inteira
-void executarEscalonador(
-    char algoritmo[],
-    int fatiaCPU,
+int executarEscalonador(
+    const ConfiguracaoSistema *configuracao,
     ArvoreRN *processosPorPid,
     ArvoreRN *processosFuturos,
     int quantidadeTotal,
-    int modoDetalhado
+    int modoDetalhado,
+    HistoricoAcessos *historicoAcessos
 ) {
     Escalonador escalonador;
 
@@ -884,15 +960,17 @@ void executarEscalonador(
     Processo *proximoProcessoFuturo;
 
     int iniciou;
+    int executouFatia;
+    int terminouCerto;
 
     iniciou = inicializarEscalonador(
         &escalonador,
-        algoritmo,
-        fatiaCPU,
+        configuracao,
         processosPorPid,
         processosFuturos,
         quantidadeTotal,
-        modoDetalhado
+        modoDetalhado,
+        historicoAcessos
     );
 
     if (!iniciou) {
@@ -900,17 +978,17 @@ void executarEscalonador(
             "Erro: nao foi possivel iniciar o escalonador.\n"
         );
 
-        return;
+        return 0;
     }
 
     printf(
         "\nAlgoritmo: %s\n",
-        escalonador.algoritmo
+        escalonador.configuracao->algoritmoEscalonamento
     );
 
     printf(
         "Fatia de CPU: %d\n",
-        escalonador.fatiaCPU
+        escalonador.configuracao->fatiaCPU
     );
 
     if (escalonador.modoDetalhado) {
@@ -918,6 +996,8 @@ void executarEscalonador(
             "\n================ EXECUCAO ================\n"
         );
     }
+
+    terminouCerto = 1;
 
     // Move os processos criados no tempo zero
     if (
@@ -929,22 +1009,14 @@ void executarEscalonador(
             "Erro ao preparar os primeiros processos.\n"
         );
 
-        destruirEscalonador(
-            &escalonador
-        );
-
-        return;
+        terminouCerto = 0;
     }
 
     while (
+        terminouCerto &&
         escalonador.quantidadeFinalizados <
         escalonador.quantidadeTotal
     ) {
-        // Valor negativo significa que deu erro grave
-        if (escalonador.quantidadeFinalizados < 0) {
-            break;
-        }
-
         // Confere novamente se chegou alguem
         if (
             !moverProcessosQueChegaram(
@@ -955,7 +1027,8 @@ void executarEscalonador(
                 "Erro ao mover os processos para pronto.\n"
             );
 
-            escalonador.quantidadeFinalizados = -1;
+            terminouCerto = 0;
+
             break;
         }
 
@@ -997,17 +1070,25 @@ void executarEscalonador(
                 "Erro: nao existe processo pronto, mas a simulacao nao terminou.\n"
             );
 
-            escalonador.quantidadeFinalizados = -1;
+            terminouCerto = 0;
+
             break;
         }
 
-        executarFatiaDeCPU(
+        executouFatia = executarFatiaDeCPU(
             &escalonador,
             processo
         );
+
+        if (!executouFatia) {
+            terminouCerto = 0;
+
+            break;
+        }
     }
 
     if (
+        terminouCerto &&
         escalonador.quantidadeFinalizados ==
         escalonador.quantidadeTotal
     ) {
@@ -1018,9 +1099,13 @@ void executarEscalonador(
         printf(
             "A simulacao foi encerrada por causa de um erro.\n"
         );
+
+        terminouCerto = 0;
     }
 
     destruirEscalonador(
         &escalonador
     );
+
+    return terminouCerto;
 }
