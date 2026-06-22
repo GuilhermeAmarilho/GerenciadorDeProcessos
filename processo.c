@@ -2,15 +2,168 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-
+#include <errno.h>
+#include <limits.h>
 #include "processo.h"
+#include "arvore_rubro_negra.h"
 
-// Remove \n ou \r do final da linha
-void removerQuebraLinha(char texto[]) {
-    int i = 0;
+// O main usa um texto de 50 posicoes para o algoritmo
+#define TAM_NOME_ALGORITMO 50
+
+// Verifica se a linha esta vazia ou so tem espaco
+static int linhaEstaVazia(char texto[]) {
+    int i;
+
+    i = 0;
 
     while (texto[i] != '\0') {
-        if (texto[i] == '\n' || texto[i] == '\r') {
+        if (!isspace((unsigned char) texto[i])) {
+            return 0;
+        }
+
+        i++;
+    }
+
+    return 1;
+}
+
+// Tira os espacos do comeco e do final
+static void removerEspacosDasPontas(char texto[]) {
+    int inicio;
+    int final;
+    int tamanho;
+
+    inicio = 0;
+
+    while (
+        texto[inicio] != '\0' &&
+        isspace((unsigned char) texto[inicio])
+    ) {
+        inicio++;
+    }
+
+    // Move o texto para o comeco
+    if (inicio > 0) {
+        tamanho = strlen(texto);
+
+        memmove(
+            texto,
+            texto + inicio,
+            tamanho - inicio + 1
+        );
+    }
+
+    final = strlen(texto);
+
+    // Vai apagando os espacos do final
+    while (final > 0) {
+        if (!isspace((unsigned char) texto[final - 1])) {
+            break;
+        }
+
+        texto[final - 1] = '\0';
+        final--;
+    }
+}
+
+// Converte um texto para inteiro
+// Retorna 1 se deu certo e 0 se o texto estava errado
+static int converterTextoParaInteiro(
+    char texto[],
+    int *valor
+) {
+    char *fim;
+    long numero;
+
+    if (
+        texto == NULL ||
+        valor == NULL
+    ) {
+        return 0;
+    }
+
+    removerEspacosDasPontas(texto);
+
+    if (texto[0] == '\0') {
+        return 0;
+    }
+
+    errno = 0;
+
+    numero = strtol(
+        texto,
+        &fim,
+        10
+    );
+
+    // Nao conseguiu ler nenhum numero
+    if (fim == texto) {
+        return 0;
+    }
+
+    // Ignora espacos depois do numero
+    while (
+        fim[0] != '\0' &&
+        isspace((unsigned char) fim[0])
+    ) {
+        fim++;
+    }
+
+    // Tinha alguma coisa estranha depois do numero
+    if (fim[0] != '\0') {
+        return 0;
+    }
+
+    // O numero ficou grande demais ou pequeno demais
+    if (
+        errno == ERANGE ||
+        numero < INT_MIN ||
+        numero > INT_MAX
+    ) {
+        return 0;
+    }
+
+    *valor = (int) numero;
+
+    return 1;
+}
+
+// Limpa tudo que ja tinha sido carregado
+// Isso e usado quando aparece algum erro no arquivo
+static void limparProcessosCarregados(
+    ArvoreRN *processosPorPid,
+    ArvoreRN *processosFuturos,
+    int *quantidade
+) {
+    // Primeiro tira os nos da arvore de futuros
+    // Nao libera os processos porque eles tambem estao na arvore por PID
+    destruirArvore(
+        processosFuturos,
+        0
+    );
+
+    // Aqui libera os nos e tambem os processos
+    destruirArvore(
+        processosPorPid,
+        1
+    );
+
+    if (quantidade != NULL) {
+        *quantidade = 0;
+    }
+}
+
+// Remove a quebra de linha
+void removerQuebraLinha(char texto[]) {
+    int i;
+
+    i = 0;
+
+    while (texto[i] != '\0') {
+        if (
+            texto[i] == '\n' ||
+            texto[i] == '\r'
+        ) {
             texto[i] = '\0';
             return;
         }
@@ -19,18 +172,27 @@ void removerQuebraLinha(char texto[]) {
     }
 }
 
-// Converte o texto para letras maiusculas
+// Coloca o texto em maiusculo
 void paraMaiusculo(char texto[]) {
-    int i = 0;
+    int i;
+
+    i = 0;
 
     while (texto[i] != '\0') {
-        texto[i] = toupper(texto[i]);
+        texto[i] = (char) toupper(
+            (unsigned char) texto[i]
+        );
+
         i++;
     }
 }
 
-// Verifica se o algoritmo informado e aceito
+// Verifica se o algoritmo existe
 int algoritmoValido(char algoritmo[]) {
+    if (algoritmo == NULL) {
+        return 0;
+    }
+
     if (strcmp(algoritmo, "RR") == 0) {
         return 1;
     }
@@ -58,257 +220,629 @@ int algoritmoValido(char algoritmo[]) {
     return 0;
 }
 
-// Verifica se o PID ja existe no vetor
-int pidJaExiste(Processo processos[], int quantidade, int pid) {
-    int i;
+// Cria um processo novo na memoria
+Processo *criarProcesso(
+    int momentoCriacao,
+    int pid,
+    int tempoExecucao,
+    int prioridadeOuBilhetes
+) {
+    Processo *novoProcesso;
 
-    for (i = 0; i < quantidade; i++) {
-        if (processos[i].pid == pid) {
-            return 1;
-        }
+    novoProcesso = malloc(sizeof(Processo));
+
+    if (novoProcesso == NULL) {
+        return NULL;
     }
 
-    return 0;
+    novoProcesso->momentoCriacao = momentoCriacao;
+    novoProcesso->pid = pid;
+    novoProcesso->tempoExecucao = tempoExecucao;
+    novoProcesso->prioridadeOuBilhetes = prioridadeOuBilhetes;
+
+    novoProcesso->tempoRestante = tempoExecucao;
+    novoProcesso->tempoConclusao = -1;
+    novoProcesso->tempoPronto = 0;
+    novoProcesso->primeiraExecucao = -1;
+    novoProcesso->tempoResposta = 0;
+    novoProcesso->vruntime = 0.0;
+
+    // Quando le o arquivo, ele ainda nao chegou no sistema
+    novoProcesso->estado = PROCESSO_FUTURO;
+
+    return novoProcesso;
 }
 
-// Verifica se o processo ja foi criado e ainda nao terminou
-int processoEstaPronto(Processo processos[], int i, int tempoAtual) {
-    if (processos[i].momentoCriacao <= tempoAtual && processos[i].tempoRestante > 0) {
+// Libera um processo da memoria
+void destruirProcesso(Processo *processo) {
+    if (processo == NULL) {
+        return;
+    }
+
+    free(processo);
+}
+
+// Verifica se o processo ja pode ir para pronto
+int processoPodeFicarPronto(
+    Processo *processo,
+    int tempoAtual
+) {
+    if (processo == NULL) {
+        return 0;
+    }
+
+    if (processo->estado != PROCESSO_FUTURO) {
+        return 0;
+    }
+
+    if (processo->tempoRestante <= 0) {
+        return 0;
+    }
+
+    if (processo->momentoCriacao > tempoAtual) {
+        return 0;
+    }
+
+    return 1;
+}
+
+// Verifica se o processo acabou
+int processoTerminou(Processo *processo) {
+    if (processo == NULL) {
+        return 0;
+    }
+
+    if (processo->tempoRestante <= 0) {
         return 1;
     }
 
     return 0;
 }
 
-// Verifica se ainda existe processo com tempo restante
-int aindaExisteProcesso(Processo processos[], int quantidade) {
-    int i;
-
-    for (i = 0; i < quantidade; i++) {
-        if (processos[i].tempoRestante > 0) {
-            return 1;
-        }
+// Coloca o processo como pronto
+void deixarProcessoPronto(Processo *processo) {
+    if (processo == NULL) {
+        return;
     }
 
-    return 0;
+    if (processoTerminou(processo)) {
+        return;
+    }
+
+    processo->estado = PROCESSO_PRONTO;
 }
 
-// Atualiza o tempo pronto dos processos que estao esperando
-void incrementarTempoPronto(
-    Processo processos[],
-    int quantidade,
-    int tempoAtual,
-    int indiceExecutando
+// Coloca o processo como executando
+void deixarProcessoExecutando(Processo *processo) {
+    if (processo == NULL) {
+        return;
+    }
+
+    if (processoTerminou(processo)) {
+        return;
+    }
+
+    processo->estado = PROCESSO_EXECUTANDO;
+}
+
+// Finaliza o processo
+void finalizarProcesso(
+    Processo *processo,
+    int tempoAtual
 ) {
-    int i;
-
-    for (i = 0; i < quantidade; i++) {
-        if (i != indiceExecutando) {
-            if (processos[i].momentoCriacao <= tempoAtual && processos[i].tempoRestante > 0) {
-                processos[i].tempoPronto++;
-            }
-        }
+    if (processo == NULL) {
+        return;
     }
+
+    processo->tempoRestante = 0;
+    processo->tempoConclusao = tempoAtual;
+    processo->estado = PROCESSO_FINALIZADO;
 }
 
-// Mostra os resultados finais dos processos
-void mostrarResultadoFinal(Processo processos[], int quantidade) {
-    int i;
+// Soma um tempo na espera do processo
+void incrementarTempoPronto(Processo *processo) {
+    if (processo == NULL) {
+        return;
+    }
+
+    // So soma se ele realmente estiver esperando CPU
+    if (processo->estado != PROCESSO_PRONTO) {
+        return;
+    }
+
+    processo->tempoPronto++;
+}
+
+// Mostra os resultados finais
+void mostrarResultadoFinal(ArvoreRN *processosPorPid) {
+    NoRN *noAtual;
+    NoRN *proximoNo;
+    Processo *processo;
+
+    int quantidade;
     int tempoTotal;
 
-    double somaTempoTotal = 0;
-    double somaTempoPronto = 0;
-    double somaTempoResposta = 0;
+    double somaTempoTotal;
+    double somaTempoPronto;
+    double somaTempoResposta;
+
+    if (processosPorPid == NULL) {
+        printf("Erro: arvore de processos nao encontrada.\n");
+        return;
+    }
+
+    if (arvoreEstaVazia(processosPorPid)) {
+        printf("Nenhum processo para mostrar.\n");
+        return;
+    }
+
+    quantidade = processosPorPid->quantidade;
+
+    somaTempoTotal = 0.0;
+    somaTempoPronto = 0.0;
+    somaTempoResposta = 0.0;
 
     printf("\n================ RESULTADO FINAL ================\n");
-    printf("PID\tCriacao\tExecucao\tConclusao\tTotal\tPronto\tResposta\n");
+    printf(
+        "PID\tCriacao\tExecucao\tConclusao\tTotal\tPronto\tResposta\n"
+    );
 
-    for (i = 0; i < quantidade; i++) {
-        // Tempo total entre criacao e conclusao
-        tempoTotal = processos[i].tempoConclusao - processos[i].momentoCriacao;
+    noAtual = obterMenorNo(processosPorPid);
 
-        // Soma os valores para calcular as medias
+    // Como a arvore esta por PID, vai mostrar em ordem de PID
+    while (noAtual != NULL) {
+        processo = noAtual->processo;
+
+        tempoTotal =
+            processo->tempoConclusao -
+            processo->momentoCriacao;
+
         somaTempoTotal += tempoTotal;
-        somaTempoPronto += processos[i].tempoPronto;
-        somaTempoResposta += processos[i].tempoResposta;
+        somaTempoPronto += processo->tempoPronto;
+        somaTempoResposta += processo->tempoResposta;
 
-        printf("%d\t%d\t%d\t\t%d\t\t%d\t%d\t%d\n",
-            processos[i].pid,
-            processos[i].momentoCriacao,
-            processos[i].tempoExecucao,
-            processos[i].tempoConclusao,
+        printf(
+            "%d\t%d\t%d\t\t%d\t\t%d\t%d\t%d\n",
+            processo->pid,
+            processo->momentoCriacao,
+            processo->tempoExecucao,
+            processo->tempoConclusao,
             tempoTotal,
-            processos[i].tempoPronto,
-            processos[i].tempoResposta
+            processo->tempoPronto,
+            processo->tempoResposta
         );
+
+        // Pega antes porque depois a gente muda de no
+        proximoNo = obterProximoNo(
+            processosPorPid,
+            noAtual
+        );
+
+        noAtual = proximoNo;
     }
 
     printf("\n================ MEDIAS ================\n");
-    printf("Tempo medio total: %.2f\n", somaTempoTotal / quantidade);
-    printf("Tempo medio pronto: %.2f\n", somaTempoPronto / quantidade);
-    printf("Tempo medio de resposta: %.2f\n", somaTempoResposta / quantidade);
+
+    printf(
+        "Tempo medio total: %.2f\n",
+        somaTempoTotal / quantidade
+    );
+
+    printf(
+        "Tempo medio pronto: %.2f\n",
+        somaTempoPronto / quantidade
+    );
+
+    printf(
+        "Tempo medio de resposta: %.2f\n",
+        somaTempoResposta / quantidade
+    );
 }
 
-// Le o arquivo e carrega os dados dos processos
+// Le o arquivo e coloca os processos nas arvores
 int carregarArquivo(
     char nomeArquivo[],
     char algoritmo[],
     int *fatiaCPU,
-    Processo processos[],
+    ArvoreRN *processosPorPid,
+    ArvoreRN *processosFuturos,
     int *quantidade
 ) {
     FILE *arquivo;
+
     char linha[TAM_LINHA];
-    char *parte;
-    int numeroLinha = 1;
-    int pidLido;
+    char *separador;
 
-    // Abre o arquivo de entrada
-    arquivo = fopen(nomeArquivo, "r");
+    char textoFatia[TAM_LINHA];
+    char caractereExtra;
 
-    if (arquivo == NULL) {
-        printf("Erro ao abrir o arquivo: %s\n", nomeArquivo);
+    int numeroLinha;
+
+    int momentoCriacao;
+    int pid;
+    int tempoExecucao;
+    int prioridadeOuBilhetes;
+
+    int quantidadeLida;
+    int inseriuPorPid;
+    int inseriuNosFuturos;
+
+    Processo *novoProcesso;
+
+    if (quantidade != NULL) {
+        *quantidade = 0;
+    }
+
+    // Confere se recebeu tudo que precisava
+    if (
+        nomeArquivo == NULL ||
+        algoritmo == NULL ||
+        fatiaCPU == NULL ||
+        processosPorPid == NULL ||
+        processosFuturos == NULL ||
+        quantidade == NULL
+    ) {
+        printf("Erro: dados faltando para carregar o arquivo.\n");
         return 0;
     }
 
-    // Le a primeira linha com algoritmo e fatia de CPU
+    // As arvores precisam ter sido inicializadas no main
+    if (
+        processosPorPid->nulo == NULL ||
+        processosFuturos->nulo == NULL
+    ) {
+        printf("Erro: as arvores nao foram inicializadas.\n");
+        return 0;
+    }
+
+    // Confere se cada arvore foi criada do jeito certo
+    if (
+        processosPorPid->tipoOrdenacao != ORDENAR_POR_PID ||
+        processosFuturos->tipoOrdenacao != ORDENAR_POR_CRIACAO
+    ) {
+        printf("Erro: as arvores foram criadas com a ordenacao errada.\n");
+        return 0;
+    }
+
+    arquivo = fopen(
+        nomeArquivo,
+        "r"
+    );
+
+    if (arquivo == NULL) {
+        printf(
+            "Erro ao abrir o arquivo: %s\n",
+            nomeArquivo
+        );
+
+        return 0;
+    }
+
+    numeroLinha = 1;
+
+    // Le a primeira linha
     if (fgets(linha, TAM_LINHA, arquivo) == NULL) {
-        printf("Arquivo vazio.\n");
+        printf("Erro: o arquivo esta vazio.\n");
+
         fclose(arquivo);
         return 0;
     }
 
     removerQuebraLinha(linha);
 
-    // Separa o nome do algoritmo
-    parte = strtok(linha, "|");
-    if (parte == NULL) {
+    // Procura o separador entre algoritmo e fatia
+    separador = strchr(
+        linha,
+        '|'
+    );
+
+    if (separador == NULL) {
         printf("Erro na primeira linha do arquivo.\n");
+
         fclose(arquivo);
         return 0;
     }
 
-    strcpy(algoritmo, parte);
+    // Corta a linha no lugar do separador
+    separador[0] = '\0';
+
+    removerEspacosDasPontas(linha);
+
+    if (linha[0] == '\0') {
+        printf("Erro: algoritmo nao informado.\n");
+
+        fclose(arquivo);
+        return 0;
+    }
+
+    // Evita passar do tamanho do texto do algoritmo
+    if (strlen(linha) >= TAM_NOME_ALGORITMO) {
+        printf("Erro: nome do algoritmo muito grande.\n");
+
+        fclose(arquivo);
+        return 0;
+    }
+
+    strcpy(
+        algoritmo,
+        linha
+    );
+
     paraMaiusculo(algoritmo);
 
-    // Valida o algoritmo escolhido
     if (!algoritmoValido(algoritmo)) {
-        printf("Erro: algoritmo desconhecido: %s\n", algoritmo);
-        printf("Use: RR, PRIORIDADE, LOTERIA ou CFS.\n");
+        printf(
+            "Erro: algoritmo desconhecido: %s\n",
+            algoritmo
+        );
+
+        printf(
+            "Use: RR, PRIORIDADE, LOTERIA ou CFS.\n"
+        );
+
         fclose(arquivo);
         return 0;
     }
 
-    // Separa a fatia de CPU
-    parte = strtok(NULL, "|");
-    if (parte == NULL) {
-        printf("Erro: fatia de CPU nao encontrada.\n");
+    // Copia o que ficou depois do separador
+    strcpy(
+        textoFatia,
+        separador + 1
+    );
+
+    // Nao pode ter outro separador depois
+    if (strchr(textoFatia, '|') != NULL) {
+        printf("Erro: primeira linha com campos demais.\n");
+
         fclose(arquivo);
         return 0;
     }
 
-    *fatiaCPU = atoi(parte);
+    if (
+        !converterTextoParaInteiro(
+            textoFatia,
+            fatiaCPU
+        )
+    ) {
+        printf("Erro: fatia de CPU invalida.\n");
 
-    // Valida a fatia de CPU
+        fclose(arquivo);
+        return 0;
+    }
+
     if (*fatiaCPU <= 0) {
         printf("Erro: a fatia de CPU precisa ser maior que zero.\n");
+
         fclose(arquivo);
         return 0;
     }
 
-    *quantidade = 0;
-
-    // Le os processos do arquivo
+    // Le uma linha de processo por vez
     while (fgets(linha, TAM_LINHA, arquivo) != NULL) {
         numeroLinha++;
+
         removerQuebraLinha(linha);
 
         // Ignora linhas vazias
-        if (strlen(linha) == 0) {
+        if (linhaEstaVazia(linha)) {
             continue;
         }
 
-        // Le o momento de criacao
-        parte = strtok(linha, "|");
-        if (parte == NULL) {
-            printf("Erro na linha %d: momento de criacao ausente.\n", numeroLinha);
+        caractereExtra = '\0';
+
+        // Tenta ler os quatro campos
+        quantidadeLida = sscanf(
+            linha,
+            " %d | %d | %d | %d %c",
+            &momentoCriacao,
+            &pid,
+            &tempoExecucao,
+            &prioridadeOuBilhetes,
+            &caractereExtra
+        );
+
+        // Se leu menos de quatro ou encontrou coisa sobrando
+        if (quantidadeLida != 4) {
+            printf(
+                "Erro na linha %d: formato invalido.\n",
+                numeroLinha
+            );
+
             fclose(arquivo);
+
+            limparProcessosCarregados(
+                processosPorPid,
+                processosFuturos,
+                quantidade
+            );
+
             return 0;
         }
 
-        processos[*quantidade].momentoCriacao = atoi(parte);
+        if (momentoCriacao < 0) {
+            printf(
+                "Erro na linha %d: momento de criacao invalido.\n",
+                numeroLinha
+            );
 
-        // Le o PID
-        parte = strtok(NULL, "|");
-        if (parte == NULL) {
-            printf("Erro na linha %d: PID ausente.\n", numeroLinha);
             fclose(arquivo);
+
+            limparProcessosCarregados(
+                processosPorPid,
+                processosFuturos,
+                quantidade
+            );
+
             return 0;
         }
 
-        pidLido = atoi(parte);
+        if (pid < 0) {
+            printf(
+                "Erro na linha %d: PID invalido.\n",
+                numeroLinha
+            );
 
-        // Verifica se o PID ja foi usado
-        if (pidJaExiste(processos, *quantidade, pidLido)) {
-            printf("Erro na linha %d: PID repetido: %d\n", numeroLinha, pidLido);
             fclose(arquivo);
+
+            limparProcessosCarregados(
+                processosPorPid,
+                processosFuturos,
+                quantidade
+            );
+
             return 0;
         }
 
-        processos[*quantidade].pid = pidLido;
+        if (tempoExecucao <= 0) {
+            printf(
+                "Erro na linha %d: tempo de execucao invalido.\n",
+                numeroLinha
+            );
 
-        // Le o tempo de execucao
-        parte = strtok(NULL, "|");
-        if (parte == NULL) {
-            printf("Erro na linha %d: tempo de execucao ausente.\n", numeroLinha);
             fclose(arquivo);
+
+            limparProcessosCarregados(
+                processosPorPid,
+                processosFuturos,
+                quantidade
+            );
+
             return 0;
         }
 
-        processos[*quantidade].tempoExecucao = atoi(parte);
+        // Mantem o mesmo comportamento do programa antigo
+        if (prioridadeOuBilhetes <= 0) {
+            printf(
+                "Aviso na linha %d: ultimo campo invalido. Sera usado valor 1.\n",
+                numeroLinha
+            );
 
-        // Valida o tempo de execucao
-        if (processos[*quantidade].tempoExecucao <= 0) {
-            printf("Erro na linha %d: tempo de execucao invalido.\n", numeroLinha);
+            prioridadeOuBilhetes = 1;
+        }
+
+        // A busca agora usa a arvore e nao percorre um vetor
+        if (
+            buscarProcessoPorPid(
+                processosPorPid,
+                pid
+            ) != NULL
+        ) {
+            printf(
+                "Erro na linha %d: PID repetido: %d\n",
+                numeroLinha,
+                pid
+            );
+
             fclose(arquivo);
+
+            limparProcessosCarregados(
+                processosPorPid,
+                processosFuturos,
+                quantidade
+            );
+
             return 0;
         }
 
-        // Le prioridade, peso ou bilhetes
-        parte = strtok(NULL, "|");
-        if (parte == NULL) {
-            printf("Erro na linha %d: prioridade, peso ou bilhetes ausente.\n", numeroLinha);
+        novoProcesso = criarProcesso(
+            momentoCriacao,
+            pid,
+            tempoExecucao,
+            prioridadeOuBilhetes
+        );
+
+        if (novoProcesso == NULL) {
+            printf(
+                "Erro: nao foi possivel criar o processo da linha %d.\n",
+                numeroLinha
+            );
+
             fclose(arquivo);
+
+            limparProcessosCarregados(
+                processosPorPid,
+                processosFuturos,
+                quantidade
+            );
+
             return 0;
         }
 
-        processos[*quantidade].prioridadeOuBilhetes = atoi(parte);
+        // Guarda na arvore usada para busca e resultado final
+        inseriuPorPid = inserirProcessoNaArvore(
+            processosPorPid,
+            novoProcesso
+        );
 
-        // Garante valor minimo para o ultimo campo
-        if (processos[*quantidade].prioridadeOuBilhetes <= 0) {
-            printf("Aviso na linha %d: ultimo campo invalido. Sera usado valor 1.\n", numeroLinha);
-            processos[*quantidade].prioridadeOuBilhetes = 1;
+        if (!inseriuPorPid) {
+            printf(
+                "Erro ao guardar o processo da linha %d na arvore por PID.\n",
+                numeroLinha
+            );
+
+            destruirProcesso(novoProcesso);
+
+            fclose(arquivo);
+
+            limparProcessosCarregados(
+                processosPorPid,
+                processosFuturos,
+                quantidade
+            );
+
+            return 0;
         }
 
-        // Inicializa os dados de controle do processo
-        processos[*quantidade].tempoRestante = processos[*quantidade].tempoExecucao;
-        processos[*quantidade].tempoConclusao = -1;
-        processos[*quantidade].tempoPronto = 0;
-        processos[*quantidade].primeiraExecucao = -1;
-        processos[*quantidade].tempoResposta = 0;
-        processos[*quantidade].vruntime = 0.0;
+        // Guarda tambem na arvore dos processos que ainda vao chegar
+        inseriuNosFuturos = inserirProcessoNaArvore(
+            processosFuturos,
+            novoProcesso
+        );
 
-        // Avanca para a proxima posicao do vetor
+        if (!inseriuNosFuturos) {
+            printf(
+                "Erro ao guardar o processo da linha %d na arvore de futuros.\n",
+                numeroLinha
+            );
+
+            // Tira da primeira arvore antes de liberar o processo
+            removerProcessoDaArvore(
+                processosPorPid,
+                novoProcesso
+            );
+
+            destruirProcesso(novoProcesso);
+
+            fclose(arquivo);
+
+            limparProcessosCarregados(
+                processosPorPid,
+                processosFuturos,
+                quantidade
+            );
+
+            return 0;
+        }
+
         (*quantidade)++;
-
-        // Evita ultrapassar o limite do vetor
-        if (*quantidade >= MAX_PROCESSOS) {
-            printf("Limite maximo de processos atingido.\n");
-            break;
-        }
     }
 
-    // Fecha o arquivo
+    // Verifica se aconteceu algum erro durante a leitura
+    if (ferror(arquivo)) {
+        printf("Erro durante a leitura do arquivo.\n");
+
+        fclose(arquivo);
+
+        limparProcessosCarregados(
+            processosPorPid,
+            processosFuturos,
+            quantidade
+        );
+
+        return 0;
+    }
+
     fclose(arquivo);
+
     return 1;
 }
