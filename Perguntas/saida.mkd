@@ -1,0 +1,926 @@
+# Análise dos resultados
+
+## Output
+
+```bash
+================ CONFIGURACAO ================
+Algoritmo de escalonamento: ALTERNANCIA
+Fatia de CPU: 10
+Politica de memoria: LOCAL
+Tamanho da memoria: 65536 bytes
+Tamanho da pagina e moldura: 512 bytes
+Quantidade total de molduras: 128
+Percentual de alocacao: 50%
+Quantidade de processos: 3
+
+Algoritmo: ALTERNANCIA
+Fatia de CPU: 10
+
+================ EXECUCAO ================
+Tempo 0: PID 1 ficou pronto
+Tempo 0: PID 2 ficou pronto
+Tempo 0: PID 3 ficou pronto
+
+Tempo 0: PID 1 entrou na CPU
+Tempo 0 -> 1: PID 1 executando | pagina 1 | falta 19
+Tempo 1 -> 2: PID 1 executando | pagina 2 | falta 18
+Tempo 2 -> 3: PID 1 executando | pagina 2 | falta 17
+Tempo 3 -> 4: PID 1 executando | pagina 2 | falta 16
+Tempo 4 -> 5: PID 1 executando | pagina 3 | falta 15
+Tempo 5 -> 6: PID 1 executando | pagina 4 | falta 14
+Tempo 6 -> 7: PID 1 executando | pagina 3 | falta 13
+Tempo 7 -> 8: PID 1 executando | pagina 4 | falta 12
+Tempo 8 -> 9: PID 1 executando | pagina 5 | falta 11
+Tempo 9 -> 10: PID 1 executando | pagina 5 | falta 10
+Tempo 10: PID 1 saiu da CPU
+
+Tempo 10: PID 2 entrou na CPU
+Tempo 10 -> 11: PID 2 executando | pagina 1 | falta 23
+Tempo 11 -> 12: PID 2 executando | pagina 2 | falta 22
+Tempo 12 -> 13: PID 2 executando | pagina 2 | falta 21
+Tempo 13 -> 14: PID 2 executando | pagina 2 | falta 20
+Tempo 14 -> 15: PID 2 executando | pagina 3 | falta 19
+Tempo 15 -> 16: PID 2 executando | pagina 4 | falta 18
+Tempo 16 -> 17: PID 2 executando | pagina 3 | falta 17
+Tempo 17 -> 18: PID 2 executando | pagina 4 | falta 16
+Tempo 18 -> 19: PID 2 executando | pagina 4 | falta 15
+Tempo 19 -> 20: PID 2 executando | pagina 4 | falta 14
+Tempo 20: PID 2 saiu da CPU
+
+Tempo 20: PID 3 entrou na CPU
+Tempo 20 -> 21: PID 3 executando | pagina 1 | falta 31
+Tempo 21 -> 22: PID 3 executando | pagina 2 | falta 30
+Tempo 22 -> 23: PID 3 executando | pagina 3 | falta 29
+Tempo 23 -> 24: PID 3 executando | pagina 4 | falta 28
+Tempo 24 -> 25: PID 3 executando | pagina 5 | falta 27
+Tempo 25 -> 26: PID 3 executando | pagina 6 | falta 26
+Tempo 26 -> 27: PID 3 executando | pagina 7 | falta 25
+Tempo 27 -> 28: PID 3 executando | pagina 8 | falta 24
+Tempo 28 -> 29: PID 3 executando | pagina 4 | falta 23
+Tempo 29 -> 30: PID 3 executando | pagina 3 | falta 22
+Tempo 30: PID 3 saiu da CPU
+
+Tempo 30: PID 1 entrou na CPU
+Tempo 30 -> 31: PID 1 executando | pagina 6 | falta 9
+Tempo 31 -> 32: PID 1 executando | pagina 1 | falta 8
+Tempo 32 -> 33: PID 1 executando | pagina 5 | falta 7
+Tempo 33 -> 34: PID 1 executando | pagina 3 | falta 6
+Tempo 34 -> 35: PID 1 executando | pagina 2 | falta 5
+Tempo 35 -> 36: PID 1 executando | pagina 6 | falta 4
+Tempo 36 -> 37: PID 1 executando | pagina 7 | falta 3
+Tempo 37 -> 38: PID 1 executando | pagina 7 | falta 2
+Tempo 38 -> 39: PID 1 executando | pagina 7 | falta 1
+Tempo 39 -> 40: PID 1 executando | pagina 8 | falta 0
+Tempo 40: PID 1 saiu da CPU
+>>> PID 1 terminou no tempo 40
+
+Tempo 40: PID 2 entrou na CPU
+Tempo 40 -> 41: PID 2 executando | pagina 2 | falta 13
+Tempo 41 -> 42: PID 2 executando | pagina 3 | falta 12
+Tempo 42 -> 43: PID 2 executando | pagina 2 | falta 11
+Tempo 43 -> 44: PID 2 executando | pagina 1 | falta 10
+Tempo 44 -> 45: PID 2 executando | pagina 3 | falta 9
+Tempo 45 -> 46: PID 2 executando | pagina 2 | falta 8
+Tempo 46 -> 47: PID 2 executando | pagina 1 | falta 7
+Tempo 47 -> 48: PID 2 executando | pagina 2 | falta 6
+Tempo 48 -> 49: PID 2 executando | pagina 2 | falta 5
+Tempo 49 -> 50: PID 2 executando | pagina 3 | falta 4
+Tempo 50: PID 2 saiu da CPU
+
+Tempo 50: PID 3 entrou na CPU
+Tempo 50 -> 51: PID 3 executando | pagina 2 | falta 21
+Tempo 51 -> 52: PID 3 executando | pagina 1 | falta 20
+Tempo 52 -> 53: PID 3 executando | pagina 1 | falta 19
+Tempo 53 -> 54: PID 3 executando | pagina 6 | falta 18
+Tempo 54 -> 55: PID 3 executando | pagina 7 | falta 17
+Tempo 55 -> 56: PID 3 executando | pagina 5 | falta 16
+Tempo 56 -> 57: PID 3 executando | pagina 6 | falta 15
+Tempo 57 -> 58: PID 3 executando | pagina 8 | falta 14
+Tempo 58 -> 59: PID 3 executando | pagina 3 | falta 13
+Tempo 59 -> 60: PID 3 executando | pagina 2 | falta 12
+Tempo 60: PID 3 saiu da CPU
+
+Tempo 60: PID 2 entrou na CPU
+Tempo 60 -> 61: PID 2 executando | pagina 4 | falta 3
+Tempo 61 -> 62: PID 2 executando | pagina 3 | falta 2
+Tempo 62 -> 63: PID 2 executando | pagina 2 | falta 1
+Tempo 63 -> 64: PID 2 executando | pagina 2 | falta 0
+Tempo 64: PID 2 saiu da CPU
+>>> PID 2 terminou no tempo 64
+
+Tempo 64: PID 3 entrou na CPU
+Tempo 64 -> 65: PID 3 executando | pagina 2 | falta 11
+Tempo 65 -> 66: PID 3 executando | pagina 1 | falta 10
+Tempo 66 -> 67: PID 3 executando | pagina 2 | falta 9
+Tempo 67 -> 68: PID 3 executando | pagina 2 | falta 8
+Tempo 68 -> 69: PID 3 executando | pagina 4 | falta 7
+Tempo 69 -> 70: PID 3 executando | pagina 4 | falta 6
+Tempo 70 -> 71: PID 3 executando | pagina 5 | falta 5
+Tempo 71 -> 72: PID 3 executando | pagina 3 | falta 4
+Tempo 72 -> 73: PID 3 executando | pagina 2 | falta 3
+Tempo 73 -> 74: PID 3 executando | pagina 1 | falta 2
+Tempo 74: PID 3 saiu da CPU
+
+Tempo 74: PID 3 entrou na CPU
+Tempo 74 -> 75: PID 3 executando | pagina 7 | falta 1
+Tempo 75 -> 76: PID 3 executando | pagina 8 | falta 0
+Tempo 76: PID 3 saiu da CPU
+>>> PID 3 terminou no tempo 76
+
+================ RESULTADO FINAL ================
+PID Criacao Execucao Conclusao Total Pronto Resposta
+1      0       20        40     40    20       0
+2      0       24        64     64    40       10
+3      0       32        76     76    44       20
+
+================ MEDIAS ================
+Tempo medio total: 60.00
+Tempo medio pronto: 34.67
+Tempo medio de resposta: 10.00
+
+Quantidade de acessos de memoria: 76
+
+================ ALGORITMOS DE MEMORIA ================
+38|40|35|27|NUF
+```
+
+---
+
+## Análise linha a linha da execução
+
+```text
+Algoritmo de escalonamento: ALTERNANCIA
+```
+
+O algoritmo escolhido foi Alternância Circular, também chamado de Round Robin. Nesse algoritmo, os processos executam em ordem de fila e recebem uma quantidade limitada de tempo na CPU.
+
+```text
+Fatia de CPU: 10
+```
+
+Cada processo pode executar por até 10 ciclos consecutivos antes de sair da CPU.
+
+Se o processo precisar de menos de 10 ciclos para terminar, ele executa apenas o tempo restante.
+
+```text
+Politica de memoria: LOCAL
+```
+
+A política de substituição é local.
+
+Isso significa que, quando um processo precisa substituir uma página, ele só pode retirar páginas pertencentes a ele mesmo.
+
+```text
+Tamanho da memoria: 65536 bytes
+```
+
+A memória principal possui 65.536 bytes.
+
+```text
+Tamanho da pagina e moldura: 512 bytes
+```
+
+Cada página virtual e cada moldura da memória principal possui 512 bytes.
+
+Página e moldura possuem o mesmo tamanho para que uma página possa ocupar exatamente uma moldura.
+
+```text
+Quantidade total de molduras: 128
+```
+
+A quantidade de molduras foi calculada por:
+
+```text
+65536 ÷ 512 = 128
+```
+
+Portanto, a memória principal possui 128 posições capazes de armazenar páginas.
+
+```text
+Percentual de alocacao: 50%
+```
+
+Cada processo pode manter na memória principal, no máximo, 50% de suas páginas virtuais.
+
+Por exemplo, um processo com oito páginas pode utilizar até quatro molduras.
+
+```text
+Quantidade de processos: 3
+```
+
+Foram carregados três processos do arquivo de entrada.
+
+---
+
+## Confirmação do escalonamento
+
+```text
+Algoritmo: ALTERNANCIA
+Fatia de CPU: 10
+```
+
+Essas linhas confirmam novamente o algoritmo e a fatia usados pelo escalonador.
+
+---
+
+## Início da execução
+
+```text
+================ EXECUCAO ================
+```
+
+Essa linha marca o início da simulação dos processos na CPU.
+
+---
+
+## Entrada dos processos no estado pronto
+
+```text
+Tempo 0: PID 1 ficou pronto
+Tempo 0: PID 2 ficou pronto
+Tempo 0: PID 3 ficou pronto
+```
+
+Os três processos possuem momento de criação igual a zero.
+
+Por isso, no início da simulação, todos saem do estado futuro e entram no estado pronto.
+
+A fila do Round Robin passa a ser:
+
+```text
+PID 1 → PID 2 → PID 3
+```
+
+---
+
+## Primeira execução do PID 1
+
+```text
+Tempo 0: PID 1 entrou na CPU
+```
+
+O PID 1 foi o primeiro processo retirado da fila.
+
+Ele poderá executar por até 10 ciclos.
+
+```text
+Tempo 0 -> 1: PID 1 executando | pagina 1 | falta 19
+```
+
+Entre os tempos 0 e 1:
+
+* o PID 1 executou um ciclo;
+* acessou a página 1;
+* seu tempo restante diminuiu de 20 para 19.
+
+A palavra `falta` nessa saída representa quanto tempo de CPU ainda falta para o processo terminar, e não uma falta de página.
+
+```text
+Tempo 1 -> 2: PID 1 executando | pagina 2 | falta 18
+```
+
+No segundo ciclo, o PID 1 acessou a página 2 e passou a precisar de mais 18 ciclos.
+
+```text
+Tempo 2 -> 3: PID 1 executando | pagina 2 | falta 17
+```
+
+O processo acessou novamente a página 2.
+
+Mesmo sendo a mesma página do ciclo anterior, o acesso é registrado novamente no histórico.
+
+```text
+Tempo 3 -> 4: PID 1 executando | pagina 2 | falta 16
+```
+
+A página 2 foi acessada pela terceira vez consecutiva.
+
+```text
+Tempo 4 -> 5: PID 1 executando | pagina 3 | falta 15
+```
+
+O próximo acesso da sequência foi à página 3.
+
+```text
+Tempo 5 -> 6: PID 1 executando | pagina 4 | falta 14
+```
+
+O PID 1 acessou a página 4.
+
+```text
+Tempo 6 -> 7: PID 1 executando | pagina 3 | falta 13
+```
+
+O processo voltou a acessar a página 3.
+
+```text
+Tempo 7 -> 8: PID 1 executando | pagina 4 | falta 12
+```
+
+O processo acessou novamente a página 4.
+
+```text
+Tempo 8 -> 9: PID 1 executando | pagina 5 | falta 11
+```
+
+O processo acessou a página 5.
+
+```text
+Tempo 9 -> 10: PID 1 executando | pagina 5 | falta 10
+```
+
+O PID 1 completou sua fatia de 10 ciclos.
+
+Após essa execução, ainda faltam 10 ciclos para ele terminar.
+
+```text
+Tempo 10: PID 1 saiu da CPU
+```
+
+O processo saiu da CPU porque utilizou toda a sua fatia.
+
+Como não terminou, voltou para o final da fila do Round Robin.
+
+A nova fila é:
+
+```text
+PID 2 → PID 3 → PID 1
+```
+
+---
+
+## Primeira execução do PID 2
+
+```text
+Tempo 10: PID 2 entrou na CPU
+```
+
+O PID 2 foi retirado do início da fila.
+
+```text
+Tempo 10 -> 11: PID 2 executando | pagina 1 | falta 23
+```
+
+O PID 2 executou seu primeiro ciclo, acessou a página 1 e passou a ter 23 ciclos restantes.
+
+```text
+Tempo 11 -> 12: PID 2 executando | pagina 2 | falta 22
+```
+
+O segundo acesso foi à página 2.
+
+```text
+Tempo 12 -> 13: PID 2 executando | pagina 2 | falta 21
+```
+
+A página 2 foi acessada novamente.
+
+```text
+Tempo 13 -> 14: PID 2 executando | pagina 2 | falta 20
+```
+
+O processo repetiu o acesso à página 2.
+
+```text
+Tempo 14 -> 15: PID 2 executando | pagina 3 | falta 19
+```
+
+O PID 2 acessou a página 3.
+
+```text
+Tempo 15 -> 16: PID 2 executando | pagina 4 | falta 18
+```
+
+O processo acessou a página 4.
+
+```text
+Tempo 16 -> 17: PID 2 executando | pagina 3 | falta 17
+```
+
+O PID 2 voltou à página 3.
+
+```text
+Tempo 17 -> 18: PID 2 executando | pagina 4 | falta 16
+```
+
+O processo acessou novamente a página 4.
+
+```text
+Tempo 18 -> 19: PID 2 executando | pagina 4 | falta 15
+Tempo 19 -> 20: PID 2 executando | pagina 4 | falta 14
+```
+
+A página 4 foi acessada mais duas vezes.
+
+Ao final da fatia, ainda restam 14 ciclos.
+
+```text
+Tempo 20: PID 2 saiu da CPU
+```
+
+O processo terminou sua fatia e voltou ao final da fila.
+
+A fila passa a ser:
+
+```text
+PID 3 → PID 1 → PID 2
+```
+
+---
+
+## Primeira execução do PID 3
+
+```text
+Tempo 20: PID 3 entrou na CPU
+```
+
+O PID 3 começou sua primeira fatia.
+
+```text
+Tempo 20 -> 21: PID 3 executando | pagina 1 | falta 31
+Tempo 21 -> 22: PID 3 executando | pagina 2 | falta 30
+Tempo 22 -> 23: PID 3 executando | pagina 3 | falta 29
+Tempo 23 -> 24: PID 3 executando | pagina 4 | falta 28
+Tempo 24 -> 25: PID 3 executando | pagina 5 | falta 27
+Tempo 25 -> 26: PID 3 executando | pagina 6 | falta 26
+Tempo 26 -> 27: PID 3 executando | pagina 7 | falta 25
+Tempo 27 -> 28: PID 3 executando | pagina 8 | falta 24
+Tempo 28 -> 29: PID 3 executando | pagina 4 | falta 23
+Tempo 29 -> 30: PID 3 executando | pagina 3 | falta 22
+```
+
+Nessa primeira fatia, o PID 3 executou 10 ciclos e acessou as páginas:
+
+```text
+1 2 3 4 5 6 7 8 4 3
+```
+
+Depois disso, ainda faltam 22 ciclos de execução.
+
+```text
+Tempo 30: PID 3 saiu da CPU
+```
+
+O PID 3 voltou ao final da fila.
+
+A fila retorna para:
+
+```text
+PID 1 → PID 2 → PID 3
+```
+
+---
+
+## Segunda execução do PID 1
+
+```text
+Tempo 30: PID 1 entrou na CPU
+```
+
+O PID 1 voltou a executar.
+
+Ele possuía exatamente 10 ciclos restantes, que correspondem à sua segunda e última fatia.
+
+```text
+Tempo 30 -> 31: PID 1 executando | pagina 6 | falta 9
+Tempo 31 -> 32: PID 1 executando | pagina 1 | falta 8
+Tempo 32 -> 33: PID 1 executando | pagina 5 | falta 7
+Tempo 33 -> 34: PID 1 executando | pagina 3 | falta 6
+Tempo 34 -> 35: PID 1 executando | pagina 2 | falta 5
+Tempo 35 -> 36: PID 1 executando | pagina 6 | falta 4
+Tempo 36 -> 37: PID 1 executando | pagina 7 | falta 3
+Tempo 37 -> 38: PID 1 executando | pagina 7 | falta 2
+Tempo 38 -> 39: PID 1 executando | pagina 7 | falta 1
+Tempo 39 -> 40: PID 1 executando | pagina 8 | falta 0
+```
+
+O PID 1 executou os 10 ciclos que faltavam e acessou:
+
+```text
+6 1 5 3 2 6 7 7 7 8
+```
+
+No último ciclo, seu tempo restante chegou a zero.
+
+```text
+Tempo 40: PID 1 saiu da CPU
+>>> PID 1 terminou no tempo 40
+```
+
+O processo foi finalizado no tempo 40 e não voltou para a fila.
+
+A fila agora contém:
+
+```text
+PID 2 → PID 3
+```
+
+---
+
+## Segunda execução do PID 2
+
+```text
+Tempo 40: PID 2 entrou na CPU
+```
+
+O PID 2 começou sua segunda fatia com 14 ciclos restantes.
+
+```text
+Tempo 40 -> 41: PID 2 executando | pagina 2 | falta 13
+Tempo 41 -> 42: PID 2 executando | pagina 3 | falta 12
+Tempo 42 -> 43: PID 2 executando | pagina 2 | falta 11
+Tempo 43 -> 44: PID 2 executando | pagina 1 | falta 10
+Tempo 44 -> 45: PID 2 executando | pagina 3 | falta 9
+Tempo 45 -> 46: PID 2 executando | pagina 2 | falta 8
+Tempo 46 -> 47: PID 2 executando | pagina 1 | falta 7
+Tempo 47 -> 48: PID 2 executando | pagina 2 | falta 6
+Tempo 48 -> 49: PID 2 executando | pagina 2 | falta 5
+Tempo 49 -> 50: PID 2 executando | pagina 3 | falta 4
+```
+
+O PID 2 executou mais 10 ciclos.
+
+Ao final dessa fatia, ainda restam quatro ciclos.
+
+```text
+Tempo 50: PID 2 saiu da CPU
+```
+
+Como não terminou, voltou para o final da fila.
+
+A fila passa a ser:
+
+```text
+PID 3 → PID 2
+```
+
+---
+
+## Segunda execução do PID 3
+
+```text
+Tempo 50: PID 3 entrou na CPU
+```
+
+O PID 3 iniciou sua segunda fatia com 22 ciclos restantes.
+
+```text
+Tempo 50 -> 51: PID 3 executando | pagina 2 | falta 21
+Tempo 51 -> 52: PID 3 executando | pagina 1 | falta 20
+Tempo 52 -> 53: PID 3 executando | pagina 1 | falta 19
+Tempo 53 -> 54: PID 3 executando | pagina 6 | falta 18
+Tempo 54 -> 55: PID 3 executando | pagina 7 | falta 17
+Tempo 55 -> 56: PID 3 executando | pagina 5 | falta 16
+Tempo 56 -> 57: PID 3 executando | pagina 6 | falta 15
+Tempo 57 -> 58: PID 3 executando | pagina 8 | falta 14
+Tempo 58 -> 59: PID 3 executando | pagina 3 | falta 13
+Tempo 59 -> 60: PID 3 executando | pagina 2 | falta 12
+```
+
+O processo executou 10 ciclos e ficou com 12 restantes.
+
+```text
+Tempo 60: PID 3 saiu da CPU
+```
+
+O PID 3 voltou ao final da fila.
+
+A fila passa a ser:
+
+```text
+PID 2 → PID 3
+```
+
+---
+
+## Última execução do PID 2
+
+```text
+Tempo 60: PID 2 entrou na CPU
+```
+
+O PID 2 possuía somente quatro ciclos restantes.
+
+Mesmo com uma fatia máxima de 10, ele executa apenas os quatro necessários.
+
+```text
+Tempo 60 -> 61: PID 2 executando | pagina 4 | falta 3
+Tempo 61 -> 62: PID 2 executando | pagina 3 | falta 2
+Tempo 62 -> 63: PID 2 executando | pagina 2 | falta 1
+Tempo 63 -> 64: PID 2 executando | pagina 2 | falta 0
+```
+
+Depois do quarto ciclo, o processo chegou a zero.
+
+```text
+Tempo 64: PID 2 saiu da CPU
+>>> PID 2 terminou no tempo 64
+```
+
+O PID 2 foi finalizado e não voltou à fila.
+
+Agora resta apenas:
+
+```text
+PID 3
+```
+
+---
+
+## Terceira execução do PID 3
+
+```text
+Tempo 64: PID 3 entrou na CPU
+```
+
+O PID 3 ainda possuía 12 ciclos.
+
+```text
+Tempo 64 -> 65: PID 3 executando | pagina 2 | falta 11
+Tempo 65 -> 66: PID 3 executando | pagina 1 | falta 10
+Tempo 66 -> 67: PID 3 executando | pagina 2 | falta 9
+Tempo 67 -> 68: PID 3 executando | pagina 2 | falta 8
+Tempo 68 -> 69: PID 3 executando | pagina 4 | falta 7
+Tempo 69 -> 70: PID 3 executando | pagina 4 | falta 6
+Tempo 70 -> 71: PID 3 executando | pagina 5 | falta 5
+Tempo 71 -> 72: PID 3 executando | pagina 3 | falta 4
+Tempo 72 -> 73: PID 3 executando | pagina 2 | falta 3
+Tempo 73 -> 74: PID 3 executando | pagina 1 | falta 2
+```
+
+Depois de 10 ciclos, ainda restam dois.
+
+```text
+Tempo 74: PID 3 saiu da CPU
+```
+
+Como ele não terminou, volta para a fila.
+
+Como é o único processo restante, será escolhido novamente imediatamente.
+
+---
+
+## Última execução do PID 3
+
+```text
+Tempo 74: PID 3 entrou na CPU
+```
+
+O processo possui apenas dois ciclos restantes.
+
+```text
+Tempo 74 -> 75: PID 3 executando | pagina 7 | falta 1
+Tempo 75 -> 76: PID 3 executando | pagina 8 | falta 0
+```
+
+Após acessar as páginas 7 e 8, seu tempo restante chega a zero.
+
+```text
+Tempo 76: PID 3 saiu da CPU
+>>> PID 3 terminou no tempo 76
+```
+
+O último processo foi finalizado.
+
+A simulação do escalonamento termina no tempo 76.
+
+---
+
+## Resultado dos processos
+
+```text
+================ RESULTADO FINAL ================
+```
+
+Essa linha marca o início da tabela de resultados do escalonamento.
+
+```text
+PID    Criacao    Execucao    Conclusao    Total    Pronto    Resposta
+```
+
+As colunas significam:
+
+* `PID`: identificador do processo;
+* `Criacao`: momento em que entrou no sistema;
+* `Execucao`: quantidade de ciclos necessários;
+* `Conclusao`: momento em que terminou;
+* `Total`: tempo entre criação e conclusão;
+* `Pronto`: tempo esperando pela CPU;
+* `Resposta`: tempo até a primeira execução.
+
+---
+
+## Resultado do PID 1
+
+```text
+1    0    20    40    40    20    0
+```
+
+O PID 1:
+
+* foi criado no tempo 0;
+* precisou de 20 ciclos;
+* terminou no tempo 40;
+* permaneceu 40 unidades no sistema;
+* esperou 20 unidades na fila;
+* começou imediatamente, então seu tempo de resposta foi 0.
+
+Cálculos:
+
+```text
+Tempo total = 40 - 0 = 40
+Tempo pronto = 40 - 0 - 20 = 20
+Tempo de resposta = 0 - 0 = 0
+```
+
+---
+
+## Resultado do PID 2
+
+```text
+2    0    24    64    64    40    10
+```
+
+O PID 2:
+
+* foi criado no tempo 0;
+* executou 24 ciclos;
+* terminou no tempo 64;
+* permaneceu 64 unidades no sistema;
+* passou 40 unidades esperando;
+* entrou na CPU pela primeira vez no tempo 10.
+
+Cálculos:
+
+```text
+Tempo total = 64 - 0 = 64
+Tempo pronto = 64 - 0 - 24 = 40
+Tempo de resposta = 10 - 0 = 10
+```
+
+---
+
+## Resultado do PID 3
+
+```text
+3    0    32    76    76    44    20
+```
+
+O PID 3:
+
+* foi criado no tempo 0;
+* executou 32 ciclos;
+* terminou no tempo 76;
+* permaneceu 76 unidades no sistema;
+* esperou 44 unidades;
+* entrou na CPU pela primeira vez no tempo 20.
+
+Cálculos:
+
+```text
+Tempo total = 76 - 0 = 76
+Tempo pronto = 76 - 0 - 32 = 44
+Tempo de resposta = 20 - 0 = 20
+```
+
+---
+
+## Médias
+
+```text
+================ MEDIAS ================
+```
+
+Essa linha separa os resultados médios dos processos.
+
+```text
+Tempo medio total: 60.00
+```
+
+O cálculo é:
+
+```text
+(40 + 64 + 76) ÷ 3 = 60
+```
+
+```text
+Tempo medio pronto: 34.67
+```
+
+O cálculo é:
+
+```text
+(20 + 40 + 44) ÷ 3 = 34,67
+```
+
+```text
+Tempo medio de resposta: 10.00
+```
+
+O cálculo é:
+
+```text
+(0 + 10 + 20) ÷ 3 = 10
+```
+
+---
+
+## Histórico de acessos
+
+```text
+Quantidade de acessos de memoria: 76
+```
+
+Foram registrados 76 acessos à memória.
+
+Esse valor corresponde à soma dos tempos de execução:
+
+```text
+PID 1: 20
+PID 2: 24
+PID 3: 32
+
+Total = 20 + 24 + 32 = 76
+```
+
+Isso confirma a regra de que cada ciclo de CPU produz um acesso à memória.
+
+---
+
+## Resultado dos algoritmos de memória
+
+```text
+================ ALGORITMOS DE MEMORIA ================
+```
+
+Essa linha marca o início do resultado da simulação de memória.
+
+```text
+38|40|35|27|NUF
+```
+
+Os valores seguem a ordem:
+
+```text
+FIFO | LRU | NUF | Ótimo | mais próximo do Ótimo
+```
+
+Portanto:
+
+```text
+FIFO = 38 trocas
+LRU = 40 trocas
+NUF = 35 trocas
+Ótimo = 27 trocas
+```
+
+O algoritmo Ótimo realizou menos trocas porque conhece os acessos futuros e sempre escolhe a melhor página para sair.
+
+Para encontrar o algoritmo mais próximo do Ótimo, o programa calcula:
+
+```text
+FIFO: 38 - 27 = 11
+LRU: 40 - 27 = 13
+NUF: 35 - 27 = 8
+```
+
+O NUF possui a menor diferença.
+
+Por isso, a saída termina com:
+
+```text
+NUF
+```
+
+---
+
+## Conclusão da execução
+
+O escalonamento Round Robin distribuiu a CPU em fatias de 10 ciclos.
+
+A ordem das fatias foi:
+
+```text
+PID 1 → PID 2 → PID 3 → PID 1 → PID 2 → PID 3 → PID 2 → PID 3 → PID 3
+```
+
+Os processos terminaram nos tempos:
+
+```text
+PID 1 → tempo 40
+PID 2 → tempo 64
+PID 3 → tempo 76
+```
+
+O histórico registrou 76 acessos à memória.
+
+Na comparação dos algoritmos de substituição:
+
+```text
+FIFO = 38
+LRU = 40
+NUF = 35
+Ótimo = 27
+```
+
+O NUF foi o algoritmo com desempenho mais próximo do Ótimo nessa entrada.
