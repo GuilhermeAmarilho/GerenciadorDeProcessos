@@ -1,0 +1,335 @@
+# Gerenciador de Processos e Memória
+
+Programa em C que simula algoritmos de escalonamento de processos e políticas de substituição de páginas.
+
+O escalonador gera a ordem real dos acessos à memória. Depois, o mesmo histórico é usado para comparar:
+
+* FIFO;
+* LRU;
+* NUF;
+* Ótimo.
+
+A saída final apresenta a quantidade de trocas de cada algoritmo e informa qual ficou mais próximo do Ótimo.
+
+---
+
+# Compilação
+
+Na pasta do projeto, execute:
+
+```bash
+gcc -std=c11 -Wall -Wextra -pedantic *.c -o escalonador
+```
+
+---
+
+# Execução
+
+Modo detalhado:
+
+```bash
+./escalonador entradas/entradaMemoria.txt
+```
+
+Modo silencioso:
+
+```bash
+./escalonador entradas/entradaMemoria.txt silencioso
+```
+
+No modo silencioso, o programa mostra apenas a saída principal.
+
+---
+
+# Formato da entrada
+
+## Primeira linha
+
+```text
+algoritmo|fatiaCPU|politicaMemoria|tamanhoMemoria|tamanhoPagina|percentualAlocacao
+```
+
+Exemplo:
+
+```text
+alternancia|5|local|65536|512|75
+```
+
+## Linhas dos processos
+
+```text
+criacao|PID|execucao|prioridadeOuBilhetes|memoria|sequenciaPaginas
+```
+
+Exemplo:
+
+```text
+0|1|15|59|4096|1 2 3 3 4 5 5 6 1 3 2 6 7 7 8
+```
+
+Cada ciclo de CPU corresponde a um acesso à memória. Por isso, a quantidade de páginas na sequência deve ser igual ao tempo de execução.
+
+---
+
+# Algoritmos de escalonamento
+
+* `RR`, `ALTERNANCIA` ou `ALTERNANCIA_CIRCULAR`: Round Robin.
+* `PRIORIDADE`: executa primeiro o processo com menor número de prioridade.
+* `LOTERIA`: sorteia um processo de acordo com sua quantidade de bilhetes.
+* `CFS`: escolhe o processo com menor `vruntime`.
+
+---
+
+# Políticas de memória
+
+## Local
+
+Um processo substitui apenas páginas pertencentes a ele.
+
+## Global
+
+A substituição pode considerar páginas de outros processos. Porém, se o processo atingir seu limite de molduras, deve substituir uma página própria.
+
+---
+
+# Algoritmos de substituição
+
+## FIFO
+
+Substitui a página que entrou primeiro na memória.
+
+## LRU
+
+Substitui a página que está há mais tempo sem ser acessada.
+
+## NUF
+
+Substitui a página com a menor frequência de acessos. Em caso de empate, escolhe a página de menor ID.
+
+## Ótimo
+
+Substitui a página cujo próximo acesso acontecerá mais distante no futuro. Se uma página não for mais utilizada, ela é a melhor candidata.
+
+Uma página carregada em uma moldura vazia não conta como troca. A troca só é contabilizada quando uma página ocupada é substituída.
+
+---
+
+# Saída
+
+Formato:
+
+```text
+FIFO|LRU|NUF|OTIMO|maisProximo
+```
+
+Exemplo:
+
+```text
+7|6|8|5|LRU
+```
+
+Em caso de igualdade entre os melhores algoritmos:
+
+```text
+empate
+```
+
+---
+
+# Organização dos arquivos
+
+## `main.c`
+
+Coordena a execução do programa:
+
+1. interpreta os argumentos;
+2. inicializa as estruturas;
+3. carrega o arquivo;
+4. executa o escalonamento;
+5. executa os algoritmos de memória;
+6. imprime o resultado;
+7. libera os recursos.
+
+---
+
+## `configuracao.h`
+
+Define:
+
+* `PoliticaMemoria`;
+* `ConfiguracaoSistema`.
+
+A configuração guarda o algoritmo de escalonamento, a fatia de CPU, a política de memória, os tamanhos da memória e das páginas e o percentual de alocação.
+
+---
+
+## `entrada.h`
+
+Declara `carregarArquivo`, função usada pelo `main.c` para carregar a configuração e os processos.
+
+---
+
+## `entrada.c`
+
+Realiza a leitura e validação da entrada:
+
+* abre o arquivo;
+* separa campos por `|`;
+* remove espaços e quebras de linha;
+* converte textos para números;
+* valida o algoritmo e a política;
+* valida os dados dos processos;
+* lê a sequência de páginas;
+* impede PIDs repetidos;
+* cria os processos;
+* insere os processos nas árvores.
+
+Em caso de erro, libera os dados já carregados.
+
+---
+
+## `processo.h`
+
+Define:
+
+* os estados `FUTURO`, `PRONTO`, `EXECUTANDO` e `FINALIZADO`;
+* a estrutura `Processo`;
+* as funções públicas relacionadas aos processos.
+
+A estrutura guarda dados de CPU, memória, sequência de páginas, tempos, `vruntime` e estado atual.
+
+---
+
+## `processo.c`
+
+Implementa:
+
+* criação do processo;
+* cópia da sequência de páginas;
+* mudança de estado;
+* verificação de chegada e término;
+* finalização;
+* cálculo e exibição dos tempos;
+* liberação do processo e de sua sequência.
+
+---
+
+## `arvore_rubro_negra.h`
+
+Define:
+
+* cores dos nós;
+* tipos de ordenação;
+* estruturas `NoRN` e `ArvoreRN`;
+* funções públicas da árvore.
+
+A árvore pode ser organizada por PID, criação, prioridade ou `vruntime`.
+
+---
+
+## `arvore_rubro_negra.c`
+
+Implementa a árvore rubro-negra:
+
+* inserção;
+* remoção;
+* busca;
+* percurso em ordem;
+* rotações;
+* correção de cores;
+* balanceamento;
+* obtenção do menor nó;
+* soma de bilhetes das subárvores;
+* busca do processo sorteado na loteria;
+* destruição da árvore.
+
+A árvore é usada para armazenar processos de forma eficiente e manter diferentes critérios de ordenação.
+
+---
+
+## `escalonador.h`
+
+Define:
+
+* a fila do Round Robin;
+* a estrutura `Escalonador`;
+* as funções públicas do escalonamento.
+
+O escalonador mantém as árvores de processos, a fila, o processo atual, o relógio e o histórico de acessos.
+
+---
+
+## `escalonador.c`
+
+Implementa o fluxo de escalonamento:
+
+* move processos futuros para prontos;
+* escolhe o próximo processo;
+* executa uma fatia de CPU;
+* registra uma página por ciclo;
+* atualiza o `vruntime`;
+* devolve processos não finalizados;
+* finaliza processos;
+* avança o relógio quando a CPU está ociosa.
+
+O histórico gerado contém tempo, PID e página de cada acesso.
+
+---
+
+## `memoria.h`
+
+Define:
+
+* `AcessoMemoria`;
+* `HistoricoAcessos`;
+* `ResultadoMemoria`;
+* `MelhorAlgoritmoMemoria`;
+* funções públicas da simulação de memória.
+
+---
+
+## `memoria.c`
+
+Implementa o gerenciamento de memória:
+
+* cria e aumenta o histórico;
+* calcula a quantidade de páginas;
+* calcula o limite de molduras;
+* representa a memória por um vetor de molduras;
+* verifica acertos e faltas;
+* procura molduras vazias;
+* aplica as políticas local e global;
+* executa FIFO, LRU, NUF e Ótimo;
+* contabiliza trocas;
+* libera as páginas de processos finalizados;
+* compara os resultados com o Ótimo;
+* imprime a linha final.
+
+Cada moldura guarda:
+
+* estado de ocupação;
+* PID;
+* página;
+* momento de entrada;
+* último acesso;
+* quantidade de acessos.
+
+---
+
+# Fluxo do programa
+
+```text
+Arquivo de entrada
+        ↓
+Criação dos processos
+        ↓
+Escalonamento da CPU
+        ↓
+Histórico de acessos
+        ↓
+FIFO, LRU, NUF e Ótimo
+        ↓
+Comparação das trocas
+        ↓
+Saída final
+```

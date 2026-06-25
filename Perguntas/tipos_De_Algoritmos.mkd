@@ -1,0 +1,661 @@
+# FIFO — Primeiro a Entrar, Primeiro a Sair
+
+## O que é?
+
+FIFO significa **First In, First Out**, ou seja, **primeiro a entrar, primeiro a sair**.
+
+Esse algoritmo escolhe para substituição a página que está há mais tempo na memória.
+
+O FIFO considera somente o momento em que a página entrou na memória. Ele não considera:
+
+* quantas vezes a página foi acessada;
+* quando ela foi acessada pela última vez;
+* quando ela será acessada novamente.
+
+## Quando ocorre uma troca?
+
+Uma troca ocorre quando:
+
+1. o processo acessa uma página;
+2. a página não está na memória;
+3. não existe moldura livre;
+4. o FIFO escolhe a página que entrou primeiro.
+
+## Exemplo
+
+Considere três molduras:
+
+```text
+[ ] [ ] [ ]
+```
+
+E a sequência:
+
+```text
+1 2 3 1 4
+```
+
+### Acesso à página 1
+
+```text
+Antes:  [ ] [ ] [ ]
+Depois: [1] [ ] [ ]
+```
+
+A página 1 não estava na memória, então ocorreu uma falta. Como existia espaço vazio, não ocorreu troca.
+
+### Acesso à página 2
+
+```text
+Antes:  [1] [ ] [ ]
+Depois: [1] [2] [ ]
+```
+
+Ocorreu uma falta, mas não uma troca.
+
+### Acesso à página 3
+
+```text
+Antes:  [1] [2] [ ]
+Depois: [1] [2] [3]
+```
+
+Ocorreu uma falta, mas não uma troca.
+
+A ordem de entrada é:
+
+```text
+1 → entrou primeiro
+2 → entrou depois
+3 → entrou por último
+```
+
+### Novo acesso à página 1
+
+```text
+Memória: [1] [2] [3]
+```
+
+A página 1 já está na memória, então ocorre um acerto.
+
+Mesmo tendo sido acessada novamente, ela continua sendo a página que entrou primeiro. O FIFO não atualiza a ordem quando uma página é utilizada.
+
+### Acesso à página 4
+
+```text
+Antes: [1] [2] [3]
+```
+
+A página 4 não está na memória e não existe moldura livre.
+
+O FIFO remove a página 1, pois ela entrou primeiro:
+
+```text
+Depois: [4] [2] [3]
+```
+
+Ocorreu uma troca:
+
+```text
+Saiu: página 1
+Entrou: página 4
+```
+
+## Tabela do exemplo
+
+| Acesso | Página | Memória após o acesso | Resultado | Página retirada |
+| -----: | -----: | --------------------- | --------- | --------------: |
+|      1 |      1 | `[1, –, –]`           | Falta     |         Nenhuma |
+|      2 |      2 | `[1, 2, –]`           | Falta     |         Nenhuma |
+|      3 |      3 | `[1, 2, 3]`           | Falta     |         Nenhuma |
+|      4 |      1 | `[1, 2, 3]`           | Acerto    |         Nenhuma |
+|      5 |      4 | `[4, 2, 3]`           | Troca     |               1 |
+
+## Informação utilizada pelo FIFO
+
+O programa precisa registrar o momento ou a ordem em que cada página entrou na memória.
+
+Exemplo conceitual:
+
+```text
+Página 1 → entrada no instante 1
+Página 2 → entrada no instante 2
+Página 3 → entrada no instante 3
+```
+
+A página com o menor instante de entrada é a vítima.
+
+## Principal vantagem
+
+O FIFO é simples de entender e implementar, pois precisa controlar apenas a ordem de entrada das páginas.
+
+## Principal desvantagem
+
+Ele pode retirar uma página que acabou de ser acessada, simplesmente porque ela entrou há mais tempo.
+
+## Como memorizar?
+
+> No FIFO, sai a página que entrou primeiro.
+
+---
+
+# LRU — Menos Recentemente Usada
+
+## O que é?
+
+LRU significa **Least Recently Used**, ou seja, **menos recentemente usada**.
+
+Esse algoritmo substitui a página que está há mais tempo sem ser acessada.
+
+O LRU considera o último momento em que cada página foi utilizada.
+
+## Quando ocorre uma troca?
+
+Uma troca ocorre quando:
+
+1. a página acessada não está na memória;
+2. não existe moldura livre;
+3. o LRU procura a página com o acesso mais antigo;
+4. essa página é substituída.
+
+## Exemplo
+
+Considere três molduras:
+
+```text
+[ ] [ ] [ ]
+```
+
+E a sequência:
+
+```text
+1 2 3 1 4
+```
+
+### Acesso à página 1
+
+```text
+Memória: [1] [ ] [ ]
+```
+
+Último acesso:
+
+```text
+Página 1 → instante 1
+```
+
+### Acesso à página 2
+
+```text
+Memória: [1] [2] [ ]
+```
+
+Últimos acessos:
+
+```text
+Página 1 → instante 1
+Página 2 → instante 2
+```
+
+### Acesso à página 3
+
+```text
+Memória: [1] [2] [3]
+```
+
+Últimos acessos:
+
+```text
+Página 1 → instante 1
+Página 2 → instante 2
+Página 3 → instante 3
+```
+
+### Novo acesso à página 1
+
+A página 1 já está na memória, então ocorre um acerto.
+
+Seu último acesso é atualizado:
+
+```text
+Página 1 → instante 4
+Página 2 → instante 2
+Página 3 → instante 3
+```
+
+Agora a página menos recentemente usada é a página 2.
+
+### Acesso à página 4
+
+A página 4 não está na memória e todas as molduras estão ocupadas.
+
+Os últimos acessos são:
+
+```text
+Página 1 → instante 4
+Página 2 → instante 2
+Página 3 → instante 3
+```
+
+A página 2 possui o acesso mais antigo, então ela é retirada:
+
+```text
+Antes:  [1] [2] [3]
+Depois: [1] [4] [3]
+```
+
+## Tabela do exemplo
+
+| Acesso | Página | Memória após o acesso | Resultado | Página retirada |
+| -----: | -----: | --------------------- | --------- | --------------: |
+|      1 |      1 | `[1, –, –]`           | Falta     |         Nenhuma |
+|      2 |      2 | `[1, 2, –]`           | Falta     |         Nenhuma |
+|      3 |      3 | `[1, 2, 3]`           | Falta     |         Nenhuma |
+|      4 |      1 | `[1, 2, 3]`           | Acerto    |         Nenhuma |
+|      5 |      4 | `[1, 4, 3]`           | Troca     |               2 |
+
+## Diferença entre FIFO e LRU
+
+No mesmo exemplo:
+
+```text
+Memória: [1] [2] [3]
+Sequência anterior: 1 2 3 1
+Próximo acesso: 4
+```
+
+O FIFO retira a página 1 porque ela entrou primeiro.
+
+O LRU retira a página 2 porque ela está há mais tempo sem ser utilizada.
+
+```text
+FIFO → considera a entrada
+LRU  → considera o último acesso
+```
+
+## Informação utilizada pelo LRU
+
+O programa deve armazenar e atualizar o instante do último acesso de cada página.
+
+Exemplo conceitual:
+
+```text
+Página 1 → último acesso no instante 4
+Página 2 → último acesso no instante 2
+Página 3 → último acesso no instante 3
+```
+
+A página com o menor instante de último acesso é escolhida como vítima.
+
+## Principal vantagem
+
+O LRU preserva páginas utilizadas recentemente, pois elas podem ser acessadas novamente em breve.
+
+## Principal desvantagem
+
+Ele exige que o programa atualize o instante de último acesso sempre que uma página é utilizada.
+
+## Como memorizar?
+
+> No LRU, sai a página que está há mais tempo sem ser acessada.
+
+---
+
+# NUF — Não Usada Frequentemente
+
+## O que é?
+
+NUF significa **Não Usada Frequentemente**.
+
+Esse algoritmo escolhe para substituição a página que possui a menor quantidade de acessos.
+
+Cada página carregada possui um contador de frequência.
+
+## Quando ocorre uma troca?
+
+Uma troca ocorre quando:
+
+1. a página solicitada não está na memória;
+2. não existe moldura livre;
+3. o programa compara as frequências das páginas;
+4. a página menos utilizada é retirada.
+
+## Regra de desempate
+
+O enunciado determina que, se várias páginas tiverem a mesma frequência, deve sair a página de menor ID.
+
+Exemplo:
+
+```text
+Página 1 → frequência 4
+Página 2 → frequência 1
+Página 3 → frequência 1
+```
+
+As páginas 2 e 3 possuem a mesma frequência.
+
+Como a página 2 tem o menor ID, ela será retirada.
+
+## Exemplo
+
+Considere três molduras:
+
+```text
+[ ] [ ] [ ]
+```
+
+E a sequência:
+
+```text
+1 2 3 1 4
+```
+
+### Acesso à página 1
+
+```text
+Memória: [1] [ ] [ ]
+```
+
+Frequência:
+
+```text
+Página 1 = 1
+```
+
+### Acesso à página 2
+
+```text
+Memória: [1] [2] [ ]
+```
+
+Frequências:
+
+```text
+Página 1 = 1
+Página 2 = 1
+```
+
+### Acesso à página 3
+
+```text
+Memória: [1] [2] [3]
+```
+
+Frequências:
+
+```text
+Página 1 = 1
+Página 2 = 1
+Página 3 = 1
+```
+
+### Novo acesso à página 1
+
+A página 1 já está carregada. Sua frequência aumenta:
+
+```text
+Página 1 = 2
+Página 2 = 1
+Página 3 = 1
+```
+
+### Acesso à página 4
+
+A página 4 não está na memória e não existe espaço livre.
+
+As frequências são:
+
+```text
+Página 1 = 2
+Página 2 = 1
+Página 3 = 1
+```
+
+Existe empate entre as páginas 2 e 3.
+
+Pela regra do enunciado, sai a página de menor ID, que é a página 2:
+
+```text
+Antes:  [1] [2] [3]
+Depois: [1] [4] [3]
+```
+
+A página 4 entra com frequência 1.
+
+## Tabela do exemplo
+
+| Acesso | Página | Memória após o acesso | Frequências     | Resultado | Página retirada |
+| -----: | -----: | --------------------- | --------------- | --------- | --------------: |
+|      1 |      1 | `[1, –, –]`           | `1:1`           | Falta     |         Nenhuma |
+|      2 |      2 | `[1, 2, –]`           | `1:1, 2:1`      | Falta     |         Nenhuma |
+|      3 |      3 | `[1, 2, 3]`           | `1:1, 2:1, 3:1` | Falta     |         Nenhuma |
+|      4 |      1 | `[1, 2, 3]`           | `1:2, 2:1, 3:1` | Acerto    |         Nenhuma |
+|      5 |      4 | `[1, 4, 3]`           | `1:2, 4:1, 3:1` | Troca     |               2 |
+
+## Informação utilizada pelo NUF
+
+O programa precisa armazenar um contador de frequência para cada página.
+
+Sempre que a página é acessada:
+
+```text
+frequência = frequência + 1
+```
+
+Quando uma nova página entra na memória por causa de um acesso, sua frequência começa em 1.
+
+## Diferença entre NUF e LRU
+
+O NUF considera quantas vezes a página foi utilizada.
+
+O LRU considera quando ela foi utilizada pela última vez.
+
+```text
+NUF → frequência de uso
+LRU → recência de uso
+```
+
+Uma página pode ter sido muito utilizada no passado, mas não estar sendo utilizada atualmente. Mesmo assim, o NUF pode mantê-la por causa de sua frequência alta.
+
+## Principal vantagem
+
+O NUF tende a preservar páginas que são utilizadas muitas vezes.
+
+## Principal desvantagem
+
+Uma página muito usada no passado pode continuar protegida mesmo que não seja mais necessária.
+
+## Como memorizar?
+
+> No NUF, sai a página que foi acessada menos vezes.
+
+Em caso de empate:
+
+> Sai a página de menor ID.
+
+---
+
+# Algoritmo Ótimo
+
+## O que é?
+
+O algoritmo Ótimo escolhe para substituição a página que demorará mais para ser acessada novamente no futuro.
+
+Se uma página nunca mais for utilizada, ela é a melhor candidata para sair.
+
+## Quando ocorre uma troca?
+
+O algoritmo Ótimo troca uma página nas mesmas condições dos outros algoritmos:
+
+1. a página solicitada não está na memória;
+2. não existe moldura livre;
+3. uma página precisa ser retirada.
+
+A diferença está apenas na forma de escolher a vítima.
+
+## Como ele conhece o futuro?
+
+No trabalho, toda a sequência de acessos já está disponível no arquivo de entrada.
+
+Exemplo:
+
+```text
+1 2 3 1 4 2 5
+```
+
+Quando o programa está acessando a página 4, ele consegue consultar os acessos restantes:
+
+```text
+2 5
+```
+
+Em um sistema operacional real, normalmente não é possível conhecer exatamente os acessos futuros. Por isso, o Ótimo é usado como referência teórica.
+
+## Exemplo
+
+Considere três molduras e a sequência:
+
+```text
+1 2 3 1 4 2 5
+```
+
+### Acesso à página 1
+
+```text
+Memória: [1] [ ] [ ]
+```
+
+Falta sem troca.
+
+### Acesso à página 2
+
+```text
+Memória: [1] [2] [ ]
+```
+
+Falta sem troca.
+
+### Acesso à página 3
+
+```text
+Memória: [1] [2] [3]
+```
+
+Falta sem troca.
+
+### Novo acesso à página 1
+
+```text
+Memória: [1] [2] [3]
+```
+
+A página já está carregada, então ocorre um acerto.
+
+### Acesso à página 4
+
+A página 4 não está na memória e não existe espaço livre.
+
+Memória atual:
+
+```text
+[1] [2] [3]
+```
+
+Sequência futura:
+
+```text
+2 5
+```
+
+O programa procura o próximo uso de cada página carregada:
+
+```text
+Página 1 → não será mais utilizada
+Página 2 → será utilizada no próximo acesso
+Página 3 → não será mais utilizada
+```
+
+As páginas 1 e 3 não serão mais usadas. Qualquer uma pode ser retirada sem causar uma falta futura.
+
+Supondo que o código escolha a página 1:
+
+```text
+Antes:  [1] [2] [3]
+Depois: [4] [2] [3]
+```
+
+### Outro exemplo
+
+Considere:
+
+```text
+Memória: [1] [2] [3]
+Próxima página: 4
+Sequência futura: 2 1 5 2 3
+```
+
+Os próximos usos são:
+
+```text
+Página 1 → segunda posição futura
+Página 2 → primeira posição futura
+Página 3 → quinta posição futura
+```
+
+A página 3 será usada mais tarde que as outras.
+
+Portanto, o Ótimo retira a página 3:
+
+```text
+Antes:  [1] [2] [3]
+Depois: [1] [2] [4]
+```
+
+## Informação utilizada pelo Ótimo
+
+O algoritmo utiliza a parte futura da sequência de acessos.
+
+Para cada página carregada, ele procura:
+
+```text
+Quando essa página será acessada novamente?
+```
+
+Se ela não aparecer novamente, pode ser retirada imediatamente.
+
+Se todas aparecerem, sai aquela cujo próximo uso estiver mais distante.
+
+## Principal vantagem
+
+Ele produz o menor número possível de trocas para uma sequência conhecida.
+
+## Principal desvantagem
+
+Ele não pode ser aplicado normalmente em sistemas reais, pois exige conhecimento exato do futuro.
+
+## Por que ele está no trabalho?
+
+O algoritmo Ótimo funciona como referência para comparar FIFO, LRU e NUF.
+
+## Como memorizar?
+
+> No Ótimo, sai a página que demorará mais para ser usada novamente.
+
+Se uma página nunca mais aparecer:
+
+> Ela é a melhor candidata para sair.
+
+---
+
+# Comparação rápida
+
+| Algoritmo | Critério de substituição                   |
+| --------- | ------------------------------------------ |
+| FIFO      | Página que entrou primeiro                 |
+| LRU       | Página usada há mais tempo                 |
+| NUF       | Página usada menos vezes                   |
+| Ótimo     | Página cujo próximo uso está mais distante |
+
+## Frase final para a apresentação
+
+Todos os algoritmos realizam uma troca quando ocorre uma falta de página e não existe espaço disponível. A diferença está na forma como cada algoritmo escolhe a página que será retirada da memória.

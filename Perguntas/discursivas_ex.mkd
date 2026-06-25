@@ -1,0 +1,703 @@
+# Perguntas e respostas — Trabalho 2 de Sistemas Operacionais
+
+## Objetivo do trabalho
+
+**1. Qual é o principal objetivo do Trabalho 2?**
+
+O objetivo é simular e comparar os algoritmos FIFO, LRU e NUF em relação ao algoritmo Ótimo, considerando principalmente a quantidade de trocas de páginas realizadas.
+
+**2. Qual é a diferença entre o foco do Trabalho 1 e o foco do Trabalho 2?**
+
+O Trabalho 1 era focado no escalonamento da CPU, enquanto o Trabalho 2 mantém o escalonamento e adiciona o gerenciamento de memória.
+
+**3. Por que o escalonamento de processos continua sendo utilizado no Trabalho 2?**
+
+O escalonamento continua sendo usado porque determina qual processo executa e, consequentemente, a ordem em que os acessos à memória acontecem.
+
+**4. Qual é a relação entre os ciclos de CPU e os acessos à memória?**
+
+Em cada ciclo de CPU executado por um processo, ele realiza exatamente um acesso à memória.
+
+**5. Por que FIFO, LRU e NUF são comparados com o algoritmo Ótimo?**
+
+O algoritmo Ótimo representa o melhor resultado possível e serve como referência para avaliar o desempenho dos outros algoritmos.
+
+**6. O que significa um algoritmo ter desempenho mais próximo do Ótimo?**
+
+Significa que o número de trocas daquele algoritmo possui a menor diferença em relação ao número de trocas do Ótimo.
+
+**7. O que o programa imprime quando dois algoritmos ficam igualmente próximos do Ótimo?**
+
+Quando dois ou mais algoritmos ficam igualmente próximos do Ótimo, o programa imprime a palavra `empate`.
+
+---
+
+## Páginas e molduras
+
+**8. O que é uma página?**
+
+Página é uma parte de tamanho fixo da memória virtual de um processo que pode ser carregada na memória principal.
+
+**9. O que é uma moldura?**
+
+Moldura é uma posição de tamanho fixo da memória principal capaz de armazenar uma página.
+
+**10. Qual é a diferença entre página e moldura?**
+
+A página pertence à memória virtual do processo, enquanto a moldura é o espaço físico da memória principal onde a página é colocada.
+
+**11. Onde ficam armazenadas as páginas de um processo?**
+
+As páginas pertencem à memória virtual e são carregadas nas molduras da memória principal conforme são acessadas.
+
+**12. Como é calculada a quantidade de molduras da memória principal?**
+
+A quantidade de molduras é calculada dividindo o tamanho total da memória pelo tamanho de cada moldura.
+
+**13. Se a memória possui 65.536 bytes e cada moldura possui 512 bytes, quantas molduras existem?**
+
+Existem 128 molduras, pois `65.536 ÷ 512 = 128`.
+
+**14. Como é calculada a quantidade de páginas de um processo?**
+
+A quantidade de páginas é calculada dividindo a quantidade de memória do processo pelo tamanho de cada página.
+
+**15. Se um processo precisa de 4.096 bytes e cada página possui 512 bytes, quantas páginas ele possui?**
+
+O processo possui oito páginas, pois `4.096 ÷ 512 = 8`.
+
+**16. Página e moldura precisam possuir o mesmo tamanho?**
+
+Sim. Elas devem possuir o mesmo tamanho para que uma página ocupe exatamente uma moldura.
+
+**17. O que acontece se o tamanho da memória não for múltiplo do tamanho da moldura?**
+
+A parte restante que não formar uma moldura completa não poderá armazenar uma página.
+
+---
+
+## Acessos à memória
+
+**18. Quantos acessos à memória um processo realiza em cada ciclo de CPU?**
+
+O processo realiza exatamente um acesso à memória em cada ciclo de CPU.
+
+**19. Como o programa sabe qual página será acessada em determinado ciclo?**
+
+O programa utiliza a próxima posição da sequência de páginas armazenada no processo.
+
+**20. Onde fica armazenada a sequência de páginas do processo?**
+
+A sequência de páginas é armazenada em um vetor pertencente à estrutura do processo.
+
+**21. O que acontece quando um processo recebe uma fatia de CPU de cinco ciclos?**
+
+Ele pode executar até cinco ciclos e, portanto, realizar até cinco acessos consecutivos à memória.
+
+**22. Se um processo possui dez acessos, mas executa apenas quatro ciclos, quantos acessos ele realiza?**
+
+Ele realiza quatro acessos, pois cada ciclo de CPU corresponde a um acesso à memória.
+
+**23. Como o escalonador interfere na ordem global dos acessos?**
+
+O escalonador escolhe qual processo executa em cada momento, formando a ordem geral dos acessos de todos os processos.
+
+**24. Por que algoritmos de escalonamento diferentes podem produzir resultados diferentes na memória?**
+
+Porque eles podem executar os processos em ordens diferentes, alterando a ordem global dos acessos às páginas.
+
+---
+
+## Falta e troca de página
+
+**25. O que é uma falta de página?**
+
+Falta de página acontece quando o processo acessa uma página que não está carregada na memória principal.
+
+**26. Quando ocorre uma falta de página?**
+
+Ela ocorre sempre que a página solicitada não é encontrada entre as páginas atualmente carregadas.
+
+**27. O que acontece quando a página acessada já está na memória?**
+
+Ocorre um acerto de página, não sendo necessário carregar nem substituir nenhuma página.
+
+**28. Toda falta de página provoca uma troca?**
+
+Não. Se existir uma moldura disponível, a página pode ser carregada sem substituir outra.
+
+**29. Qual é a diferença entre falta de página e troca de página?**
+
+Falta significa que a página não estava na memória; troca significa que uma página precisou sair para outra entrar.
+
+**30. Carregar uma página em uma moldura vazia conta como troca?**
+
+Não. Segundo o enunciado, apenas a substituição de uma página por outra conta como troca.
+
+**31. Em quais condições ocorre uma troca de página?**
+
+A troca ocorre quando a página solicitada não está carregada e não há espaço disponível para colocá-la.
+
+**32. Como o programa verifica se uma página já está na memória?**
+
+O programa percorre as molduras procurando a combinação entre o PID do processo e o número da página.
+
+**33. Como o programa sabe que precisa escolher uma página vítima?**
+
+Ele procura uma vítima quando ocorre uma falta de página e não encontra uma moldura disponível.
+
+---
+
+## Memória cheia
+
+**34. Como o programa sabe que a memória está cheia?**
+
+A memória está cheia quando todas as molduras disponíveis estão ocupadas.
+
+**35. Onde fica indicada a ocupação de uma moldura?**
+
+A estrutura da moldura armazena informações que indicam se ela está ocupada e qual página está nela.
+
+**36. O que acontece quando existe uma moldura livre?**
+
+A nova página é carregada na moldura livre e nenhuma troca é contabilizada.
+
+**37. O que acontece quando não existe uma moldura livre?**
+
+Um algoritmo de substituição escolhe uma página vítima para sair da memória.
+
+**38. Na política local, toda a memória precisa estar cheia para ocorrer uma troca?**
+
+Não. Basta que o processo tenha atingido seu próprio limite de molduras.
+
+**39. Na política global, quando uma troca é necessária?**
+
+A troca é necessária quando não existe nenhuma moldura livre na memória principal.
+
+**40. Qual é a diferença entre a memória estar cheia e um processo atingir seu limite?**
+
+Memória cheia significa que todas as molduras estão ocupadas; limite atingido significa que aquele processo não pode ocupar mais molduras.
+
+**41. Pode ocorrer troca mesmo existindo molduras livres?**
+
+Sim. Isso pode acontecer na política local quando o processo já atingiu seu limite individual.
+
+---
+
+## Percentual de alocação
+
+**42. O que representa o percentual de alocação?**
+
+Ele define quanto da memória virtual do processo poderá permanecer ao mesmo tempo na memória principal.
+
+**43. Como o percentual afeta a quantidade de molduras do processo?**
+
+Um percentual menor permite menos molduras para o processo e pode aumentar a necessidade de substituições.
+
+**44. Como é calculado o limite de molduras de um processo?**
+
+O limite é calculado aplicando o percentual sobre a quantidade total de páginas do processo.
+
+**45. Um processo com oito páginas e percentual de 50% pode ocupar quantas molduras?**
+
+Ele pode ocupar quatro molduras, pois 50% de oito é igual a quatro.
+
+**46. O que acontece quando o processo atinge seu limite de molduras?**
+
+Uma página dele precisa ser substituída para que uma nova página possa ser carregada.
+
+**47. Um percentual menor tende a aumentar ou diminuir as trocas?**
+
+Em geral, tende a aumentar as trocas, pois o processo poderá manter menos páginas carregadas.
+
+**48. O que pode acontecer quando o percentual é 100%?**
+
+O processo pode manter até todas as suas páginas na memória, desde que exista espaço físico suficiente.
+
+**49. O percentual é aplicado sobre a memória principal ou sobre a memória do processo?**
+
+Segundo o enunciado, ele é aplicado sobre a quantidade de memória virtual necessária pelo processo.
+
+---
+
+## Política local
+
+**50. O que significa política de substituição local?**
+
+Significa que um processo só pode substituir páginas pertencentes a ele mesmo.
+
+**51. Quais páginas podem ser escolhidas como vítimas na política local?**
+
+Somente as páginas pertencentes ao processo que está realizando o acesso.
+
+**52. Um processo pode retirar a página de outro na política local?**
+
+Não. A página escolhida deve pertencer ao próprio processo.
+
+**53. Qual é uma vantagem da política local?**
+
+Ela impede que um processo retire páginas de outro, oferecendo maior isolamento.
+
+**54. Qual é uma desvantagem da política local?**
+
+Um processo pode precisar realizar trocas mesmo quando ainda existem molduras livres na memória.
+
+**55. O que acontece quando o processo atinge seu limite local?**
+
+Ele precisa substituir uma de suas próprias páginas antes de carregar uma nova.
+
+**56. Como o programa identifica as páginas pertencentes a um processo?**
+
+Cada moldura armazena o PID do processo ao qual a página pertence.
+
+**57. Processos diferentes podem possuir páginas com o mesmo número?**
+
+Sim. A página 1 do processo 1 é diferente da página 1 do processo 2, pois possuem PIDs diferentes.
+
+---
+
+## Política global
+
+**58. O que significa política de substituição global?**
+
+Significa que qualquer página carregada na memória pode ser escolhida como vítima.
+
+**59. Quais páginas podem ser escolhidas na política global?**
+
+Podem ser escolhidas páginas pertencentes a qualquer processo.
+
+**60. Um processo pode retirar a página de outro na política global?**
+
+Sim. Um processo pode provocar a substituição de uma página pertencente a outro.
+
+**61. Qual é uma vantagem da política global?**
+
+Ela permite um uso mais flexível de todas as molduras disponíveis.
+
+**62. Qual é uma desvantagem da política global?**
+
+Um processo pode prejudicar outro ao retirar páginas que ele ainda utilizará.
+
+**63. Por que um processo pode prejudicar outro na política global?**
+
+Porque todos os processos disputam o mesmo conjunto de molduras.
+
+**64. Qual é a principal diferença entre política local e global?**
+
+Na local, a vítima deve pertencer ao processo atual; na global, pode pertencer a qualquer processo.
+
+**65. Na política global, o percentual de alocação possui a mesma função?**
+
+No projeto, o percentual é principalmente usado para estabelecer o limite individual da política local.
+
+---
+
+## FIFO
+
+**66. O que significa FIFO?**
+
+FIFO significa “primeiro a entrar, primeiro a sair”.
+
+**67. Qual página o FIFO escolhe para substituição?**
+
+Ele escolhe a página que foi carregada na memória há mais tempo.
+
+**68. O FIFO considera o último acesso da página?**
+
+Não. Ele considera apenas a ordem de entrada da página na memória.
+
+**69. Qual informação precisa ser armazenada para executar o FIFO?**
+
+É necessário armazenar o instante ou a ordem em que cada página entrou na memória.
+
+**70. Como o programa identifica a página que entrou primeiro?**
+
+Ele compara os instantes de entrada e escolhe a página com o menor instante.
+
+**71. Uma página acessada recentemente pode ser removida pelo FIFO?**
+
+Sim. Se ela tiver entrado primeiro, poderá ser removida mesmo tendo sido acessada recentemente.
+
+**72. Qual é a diferença entre ordem de entrada e ordem de acesso?**
+
+A ordem de entrada indica quando a página foi carregada; a ordem de acesso indica quando ela foi utilizada.
+
+**73. Aumentar a quantidade de molduras sempre melhora o FIFO?**
+
+Não. Em alguns casos, o FIFO pode apresentar mais faltas mesmo com mais molduras.
+
+**74. O que é a anomalia de Belady?**
+
+É o fenômeno em que o FIFO pode apresentar mais faltas de página quando a quantidade de molduras aumenta.
+
+**75. Por que o FIFO é simples de implementar?**
+
+Porque ele precisa controlar somente a ordem de entrada das páginas.
+
+---
+
+## LRU
+
+**76. O que significa LRU?**
+
+LRU significa “menos recentemente usada”.
+
+**77. Qual página o LRU escolhe para substituição?**
+
+Ele escolhe a página que está há mais tempo sem ser acessada.
+
+**78. O que deve ser atualizado sempre que uma página é acessada?**
+
+Deve ser atualizado o instante do último acesso daquela página.
+
+**79. Como o programa encontra a página menos recentemente usada?**
+
+Ele escolhe a página que possui o menor instante de último acesso.
+
+**80. O LRU considera quando a página entrou na memória?**
+
+Não diretamente. Ele considera quando ela foi acessada pela última vez.
+
+**81. Uma página antiga que acabou de ser acessada será retirada pelo LRU?**
+
+Normalmente não, pois seu instante de último acesso será atualizado.
+
+**82. Qual é a diferença entre FIFO e LRU?**
+
+O FIFO considera quando a página entrou; o LRU considera quando ela foi acessada pela última vez.
+
+**83. Por que o LRU pode apresentar desempenho melhor que o FIFO?**
+
+Porque páginas utilizadas recentemente possuem maior chance de serem utilizadas novamente em breve.
+
+**84. O LRU precisa armazenar mais informações que o FIFO?**
+
+Sim. Ele precisa armazenar e atualizar o último instante de acesso de cada página.
+
+**85. O que acontece se duas páginas possuírem o mesmo último acesso?**
+
+O programa deve utilizar um critério de desempate determinístico para escolher uma delas.
+
+---
+
+## NUF
+
+**86. O que significa NUF?**
+
+NUF significa “não usada frequentemente” e considera a frequência de acessos das páginas.
+
+**87. Qual página o NUF escolhe para substituição?**
+
+Ele escolhe a página que possui a menor quantidade de acessos.
+
+**88. Qual informação deve ser armazenada para o NUF?**
+
+Deve ser armazenado um contador de acessos para cada página.
+
+**89. Quando o contador de frequência é incrementado?**
+
+Ele é incrementado sempre que a página é acessada.
+
+**90. Como o NUF resolve um empate?**
+
+Em caso de empate na frequência, ele escolhe a página de menor ID.
+
+**91. Por que existe um critério de desempate no NUF?**
+
+O critério garante que a mesma entrada sempre produza o mesmo resultado.
+
+**92. Uma página muito usada no passado pode permanecer mesmo sem uso recente?**
+
+Sim. Sua frequência alta pode fazer com que ela permaneça na memória.
+
+**93. Qual é uma desvantagem do NUF?**
+
+Ele pode favorecer páginas usadas muitas vezes no passado, mesmo que não sejam mais necessárias.
+
+**94. Qual é a diferença entre frequência e recência?**
+
+Frequência é quantas vezes a página foi usada; recência é quanto tempo passou desde seu último uso.
+
+**95. Qual é a diferença entre NUF e LRU?**
+
+O NUF considera a quantidade total de acessos, enquanto o LRU considera o momento do último acesso.
+
+---
+
+## Algoritmo Ótimo
+
+**96. Qual página o algoritmo Ótimo escolhe?**
+
+Ele escolhe a página cujo próximo acesso ocorrerá mais distante no futuro.
+
+**97. Como o algoritmo Ótimo conhece os acessos futuros?**
+
+Ele consulta a parte restante da sequência de páginas fornecida no arquivo de entrada.
+
+**98. O Ótimo decide de forma diferente quando deve ocorrer uma troca?**
+
+Não. A troca ocorre nas mesmas condições dos outros algoritmos: falta de página e ausência de espaço.
+
+**99. O que muda entre o Ótimo e os outros algoritmos?**
+
+O que muda é a escolha da vítima, pois o Ótimo utiliza informações sobre os acessos futuros.
+
+**100. O que acontece se uma página não aparecer mais na sequência futura?**
+
+Ela será uma boa escolha para substituição, pois não será mais necessária.
+
+**101. O que acontece quando todas as páginas serão usadas novamente?**
+
+O algoritmo remove aquela cujo próximo acesso estiver mais distante.
+
+**102. Como o programa encontra o próximo uso de cada página?**
+
+Ele percorre a sequência futura procurando a próxima ocorrência de cada página carregada.
+
+**103. A partir de qual posição o Ótimo procura os acessos futuros?**
+
+Ele começa a procurar depois da posição do acesso atual.
+
+**104. Por que o algoritmo Ótimo não é usado normalmente em sistemas reais?**
+
+Porque um sistema operacional real não conhece exatamente os acessos que ocorrerão no futuro.
+
+**105. Por que o algoritmo Ótimo é utilizado neste trabalho?**
+
+Ele serve como referência para indicar o menor número possível de trocas.
+
+**106. O algoritmo Ótimo sempre produz o menor número de trocas?**
+
+Sim. Para uma sequência conhecida, ele faz a melhor escolha possível em cada substituição.
+
+**107. O Ótimo realiza uma troca quando existe uma moldura livre?**
+
+Não. Se houver espaço disponível, a página é carregada sem substituir outra.
+
+**108. Qual é a diferença entre o Ótimo e os algoritmos baseados no passado?**
+
+FIFO, LRU e NUF utilizam informações anteriores, enquanto o Ótimo utiliza informações futuras.
+
+---
+
+## Comparação dos algoritmos
+
+**109. Como o programa calcula qual algoritmo ficou mais próximo do Ótimo?**
+
+Ele calcula a diferença entre as trocas de FIFO, LRU e NUF e o número de trocas do Ótimo.
+
+**110. Por que é utilizada a diferença entre os números de trocas?**
+
+Porque a menor diferença indica qual algoritmo produziu um resultado mais parecido com o Ótimo.
+
+**111. O algoritmo com menos trocas será sempre o mais próximo do Ótimo?**
+
+Sim, entre FIFO, LRU e NUF, pois o Ótimo possui o menor valor e a menor quantidade de trocas ficará mais próxima dele.
+
+**112. O que acontece se FIFO e LRU possuírem a mesma diferença em relação ao Ótimo?**
+
+O programa deve imprimir `empate`.
+
+**113. O algoritmo Ótimo participa da escolha do nome do algoritmo mais próximo?**
+
+Não. Ele é apenas a referência usada para comparar FIFO, LRU e NUF.
+
+**114. Por que todos os algoritmos recebem o mesmo histórico de acessos?**
+
+Para que a comparação seja justa e somente o método de substituição seja diferente.
+
+**115. Cada algoritmo deve possuir sua própria memória durante a simulação?**
+
+Sim. Cada algoritmo deve iniciar com a memória vazia e executar o mesmo histórico separadamente.
+
+**116. O que aconteceria se os algoritmos compartilhassem a mesma memória?**
+
+O resultado de um algoritmo alteraria o estado utilizado pelos outros, tornando a comparação incorreta.
+
+**117. Por que as condições precisam ser iguais para todos os algoritmos?**
+
+Porque só assim é possível comparar corretamente o efeito de cada estratégia de substituição.
+
+---
+
+## Funcionamento do programa
+
+**118. Qual é a função do arquivo de entrada?**
+
+Ele fornece as configurações do ambiente e os dados dos processos que serão simulados.
+
+**119. O que contém a primeira linha do arquivo?**
+
+Ela contém o algoritmo de escalonamento, a fatia de CPU, a política de memória, os tamanhos da memória e das páginas e o percentual de alocação.
+
+**120. O que contém cada linha de processo?**
+
+Ela contém criação, PID, tempo de execução, prioridade ou bilhetes, memória necessária e sequência de páginas.
+
+**121. Como o programa separa os campos da entrada?**
+
+Ele utiliza o caractere `|` como separador entre os campos.
+
+**122. Como a sequência de páginas é armazenada?**
+
+Ela é convertida em um vetor de números dentro da estrutura do processo.
+
+**123. Como o programa controla o próximo acesso do processo?**
+
+Ele mantém um índice que indica a próxima posição da sequência de páginas.
+
+**124. O que acontece quando um processo termina?**
+
+Ele deixa de ser escalonado e seus dados são usados apenas para finalizar os resultados da simulação.
+
+**125. Como o histórico de acessos é formado?**
+
+Cada ciclo executado registra o PID e a página acessada naquele momento.
+
+**126. O histórico contém somente o número da página?**
+
+Não. Ele também precisa identificar o processo responsável pelo acesso.
+
+**127. Por que o PID precisa acompanhar o número da página?**
+
+Porque processos diferentes podem possuir páginas com o mesmo número.
+
+**128. Como diferenciar a página 1 de dois processos diferentes?**
+
+A página é identificada pela combinação do PID com o número da página.
+
+**129. Em qual arquivo fica concentrada a lógica da memória?**
+
+No projeto, a principal lógica de memória fica nos arquivos `memoria.c` e `memoria.h`.
+
+**130. Qual é a função da estrutura que representa uma moldura?**
+
+Ela armazena a página presente na moldura e as informações necessárias aos algoritmos.
+
+**131. Quais informações uma moldura pode armazenar?**
+
+PID, número da página, estado de ocupação, instante de entrada, último acesso e frequência.
+
+**132. Como o programa prepara a memória para testar outro algoritmo?**
+
+Ele cria ou reinicializa uma memória vazia antes de executar cada algoritmo.
+
+**133. Como as trocas são contabilizadas?**
+
+O contador é incrementado somente quando uma página ocupada é retirada para outra entrar.
+
+**134. Em qual momento o contador de trocas aumenta?**
+
+Ele aumenta depois que uma página vítima é escolhida e substituída.
+
+**135. O contador aumenta quando uma página ocupa uma moldura vazia?**
+
+Não. Nesse caso houve uma falta de página, mas não uma troca.
+
+---
+
+## Perguntas práticas
+
+**136. Com três molduras vazias e a sequência `1 2 3`, quantas faltas e trocas ocorrem?**
+
+Ocorrem três faltas de página e nenhuma troca, pois todas as páginas ocupam molduras vazias.
+
+**137. Com a memória contendo `1 2 3`, o que acontece ao acessar a página 4?**
+
+Ocorre uma falta e uma troca, pois a página 4 não está carregada e não há espaço livre.
+
+**138. Se a página 1 entrou primeiro em `[1, 2, 3]`, qual página o FIFO retira?**
+
+O FIFO retira a página 1, pois foi a primeira a entrar.
+
+**139. Se a página 3 foi acessada há mais tempo em `[1, 2, 3]`, qual página o LRU retira?**
+
+O LRU retira a página 3, pois é a menos recentemente usada.
+
+**140. Se as frequências forem página 1 igual a 4, página 2 igual a 2 e página 3 igual a 2, qual página o NUF retira?**
+
+O NUF retira a página 2, pois existe empate na menor frequência e ela possui o menor ID.
+
+**141. Com memória `[1, 2, 3]` e futuro `2 1 4 2 1 3`, qual página o Ótimo retira para carregar a página 4?**
+
+Ele retira a página 3, pois seu próximo uso é o mais distante.
+
+**142. Com memória `[1, 2, 3]` e futuro `2 1 4 2 1`, qual página o Ótimo retira?**
+
+Ele retira a página 3, pois ela não será mais utilizada.
+
+**143. Se a página já está na memória, o contador de trocas muda?**
+
+Não. O acesso é um acerto e nenhuma troca é realizada.
+
+**144. Se existe uma moldura livre, uma falta de página conta como troca?**
+
+Não. A página é carregada na moldura livre sem substituir outra.
+
+**145. Se o processo atingiu seu limite local, mas existem molduras livres, o que acontece?**
+
+Ele precisa substituir uma de suas próprias páginas, pois não pode ultrapassar seu limite local.
+
+---
+
+## Perguntas sobre o código
+
+**146. Qual função verifica se uma página já está carregada?**
+
+É a função da memória que percorre as molduras procurando o PID e o número da página solicitada.
+
+**147. Qual função procura uma moldura livre?**
+
+É a função que percorre as molduras verificando qual posição ainda não está ocupada.
+
+**148. Como o código escolhe a vítima no FIFO?**
+
+Ele procura a página com o menor instante de entrada na memória.
+
+**149. Como o código escolhe a vítima no LRU?**
+
+Ele procura a página com o menor instante de último acesso.
+
+**150. Como o código escolhe a vítima no NUF?**
+
+Ele procura a menor frequência e, em caso de empate, escolhe a página de menor ID.
+
+**151. Como o código escolhe a vítima no Ótimo?**
+
+Ele procura qual página terá o uso mais distante no futuro ou não será mais utilizada.
+
+**152. Onde o instante de entrada é registrado?**
+
+Ele é registrado na moldura quando a página é carregada na memória.
+
+**153. Onde o último acesso é atualizado?**
+
+Ele é atualizado na moldura sempre que a página é acessada.
+
+**154. Onde a frequência é incrementada?**
+
+Ela é incrementada nas informações da página sempre que ocorre um acesso.
+
+**155. Onde o próximo uso futuro é procurado?**
+
+Ele é procurado na parte restante do histórico ou da sequência de acessos.
+
+**156. Onde a política local ou global é verificada?**
+
+Ela é verificada antes da busca por uma moldura livre ou por uma página vítima.
+
+**157. Como o código identifica que uma moldura pertence ao processo atual?**
+
+Ele compara o PID armazenado na moldura com o PID do processo atual.
+
+**158. Onde o contador de trocas é incrementado?**
+
+Ele é incrementado na parte do código que substitui a página vítima pela nova página.
+
+**159. Como o programa evita contar um carregamento simples como troca?**
+
+Ele só incrementa o contador quando a moldura já estava ocupada por outra página.
+
+**160. Como o programa decide imprimir `empate`?**
+
+Ele verifica se dois ou mais algoritmos possuem a mesma menor diferença em relação ao Ótimo.
