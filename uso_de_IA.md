@@ -122,3 +122,7 @@ Na segunda parte do trabalho, a ferramenta também foi utilizada como apoio para
 ### Revisão final do código
 
 - "Faça uma revisão final dos arquivos do projeto procurando erros de lógica, funções não utilizadas, possíveis acessos inválidos à memória e situações em que o programa possa produzir um resultado incorreto."
+
+### Organização do Readme
+
+- "O readme ficou muito bagunçado e mudamos muitas coisas, vou te passar as 2 versões abaixo e as mudanças que fizemos, me ajude a criar uma nova versão do readme bem documentada e simplificada."

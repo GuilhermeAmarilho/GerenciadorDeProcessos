@@ -1,10 +1,10 @@
 # Gerenciador de Processos e Memória
 
-Este trabalho simula o escalonamento de processos e também compara algoritmos de substituição de páginas.
+Este trabalho simula o escalonamento de processos e compara algoritmos de substituição de páginas.
 
 O programa recebe um arquivo de entrada com as configurações do sistema, os processos e a sequência de páginas acessadas por cada processo.
 
-Durante a execução, cada ciclo de CPU faz um acesso à memória.
+Durante a execução, cada ciclo de CPU realiza um acesso à memória.
 
 No final, o programa mostra a quantidade de trocas de páginas dos algoritmos:
 
@@ -13,7 +13,7 @@ No final, o programa mostra a quantidade de trocas de páginas dos algoritmos:
 * NUF;
 * Ótimo.
 
-Também mostra qual algoritmo ficou mais próximo do resultado do algoritmo Ótimo.
+Também mostra qual dos algoritmos FIFO, LRU e NUF ficou mais próximo do resultado obtido pelo algoritmo Ótimo.
 
 ---
 
@@ -22,7 +22,10 @@ Também mostra qual algoritmo ficou mais próximo do resultado do algoritmo Óti
 ```text
 GerenciadorDeProcessos/
 ├── entradas/
-│   └── entradaMemoria.txt
+│   ├── entradaMemoria.txt
+│   ├── entrada1.txt
+│   ├── entrada2.txt
+│   └── entrada3.txt
 ├── main.c
 ├── configuracao.h
 ├── entrada.c
@@ -49,7 +52,7 @@ Entre na pasta do projeto pelo terminal e execute:
 gcc -std=c11 -Wall -Wextra -pedantic *.c -o escalonador
 ```
 
-Se não aparecer nenhum erro, o programa foi compilado corretamente.
+Se não aparecer nenhum erro ou aviso, o programa foi compilado corretamente.
 
 ---
 
@@ -68,6 +71,14 @@ Para executar sem mostrar os detalhes de cada ciclo:
 ```
 
 Mesmo no modo silencioso, o programa ainda mostra o resultado dos processos e a linha final dos algoritmos de memória.
+
+O nome do arquivo pode ser substituído por qualquer uma das entradas disponíveis.
+
+Exemplo:
+
+```bash
+./escalonador entradas/entrada1.txt
+```
 
 ---
 
@@ -93,7 +104,7 @@ tempoCriacaoProcesso|PID|tempoDeExecução|prioridadeOuBilhetes|qtdeMemoria|sequ
 alternancia|10|local|65536|512|50
 0|1|20|59|4096|1 2 2 2 3 4 3 4 5 5 6 1 5 3 2 6 7 7 7 8
 0|2|24|32|2048|1 2 2 2 3 4 3 4 4 4 2 3 2 1 3 2 1 2 2 3 4 3 2 2
-0|3|32|13|4096|1 2 3 4 5 6 7 8 4 3 2 1 1 6 7 5 6 8 3 2 2 1 2 2 4 4 5 3 2 1 7 8
+0|3|32|32|4096|1 2 3 4 5 6 7 8 4 3 2 1 1 6 7 5 6 8 3 2 2 1 2 2 4 4 5 3 2 1 7 8
 ```
 
 ---
@@ -138,7 +149,7 @@ global
 
 Na política local, um processo só pode substituir páginas dele mesmo.
 
-Na política global, um processo pode substituir páginas de outros processos quando a memória estiver cheia.
+Na política global, um processo pode substituir páginas de outros processos quando a memória estiver cheia e quando ainda não tiver atingido seu próprio limite de alocação.
 
 ### Tamanho da memória
 
@@ -252,6 +263,14 @@ Os processos são executados em ordem de fila.
 
 Quando a fatia de CPU termina, o processo volta para o final da fila, caso ainda não tenha terminado.
 
+Esse algoritmo também pode ser informado na entrada pelos nomes:
+
+```text
+alternancia
+rr
+alternancia_circular
+```
+
 ### Prioridade
 
 O processo com o menor valor de prioridade é escolhido primeiro.
@@ -276,13 +295,21 @@ O tempo virtual aumenta de acordo com o peso do processo.
 
 Remove a página que entrou primeiro na memória.
 
+O momento de entrada da página é usado para escolher qual delas será substituída.
+
 ### LRU
 
 Remove a página que ficou mais tempo sem ser acessada.
 
+O programa guarda o momento do último acesso de cada página que está na memória.
+
 ### NUF
 
 Remove a página que foi acessada menos vezes.
+
+A quantidade de acessos é acumulada durante toda a execução do processo.
+
+Quando uma página sai da memória e depois retorna, seu contador de acessos não é reiniciado. O programa continua usando a quantidade total de acessos daquela página.
 
 Quando duas páginas possuem a mesma frequência, é removida a página com menor ID.
 
@@ -292,7 +319,7 @@ Remove a página que será acessada mais longe no futuro.
 
 Quando uma página não será mais acessada, ela é escolhida para sair.
 
-Esse algoritmo é usado como referência para comparar os outros algoritmos.
+Esse algoritmo utiliza o histórico completo de acessos e é usado como referência para comparar os outros algoritmos.
 
 ---
 
@@ -374,7 +401,7 @@ FIFO|LRU|NUF|ÓTIMO|MELHOR
 Exemplo:
 
 ```text
-38|40|35|27|NUF
+38|40|38|27|empate
 ```
 
 Esse resultado significa:
@@ -382,50 +409,142 @@ Esse resultado significa:
 ```text
 FIFO: 38 trocas
 LRU: 40 trocas
-NUF: 35 trocas
+NUF: 38 trocas
 Ótimo: 27 trocas
-Algoritmo mais próximo do Ótimo: NUF
 ```
 
-Quando dois ou mais algoritmos ficam igualmente próximos do Ótimo, o programa imprime:
+As diferenças em relação ao algoritmo Ótimo são:
+
+```text
+FIFO: 38 - 27 = 11
+LRU: 40 - 27 = 13
+NUF: 38 - 27 = 11
+```
+
+FIFO e NUF ficaram igualmente próximos do algoritmo Ótimo. Por isso, o programa apresenta:
 
 ```text
 empate
 ```
 
+Quando apenas um algoritmo fica mais próximo do Ótimo, o programa apresenta o nome dele.
+
 Exemplo:
 
 ```text
-1|1|1|1|empate
+13|12|14|9|LRU
 ```
+
+Nesse caso, o LRU ficou mais próximo do resultado do algoritmo Ótimo.
 
 ---
 
-## Entrada fornecida
+## Entradas fornecidas
 
-O arquivo usado para executar o programa é:
+### Entrada principal
+
+Arquivo:
 
 ```text
 entradas/entradaMemoria.txt
 ```
 
-Execução normal:
+Execução:
 
 ```bash
 ./escalonador entradas/entradaMemoria.txt
 ```
 
-Execução silenciosa:
-
-```bash
-./escalonador entradas/entradaMemoria.txt silencioso
-```
-
-Para a entrada fornecida, a linha final produzida é:
+Resultado:
 
 ```text
-38|40|35|27|NUF
+38|40|38|27|empate
 ```
+
+### Entrada 1
+
+Arquivo:
+
+```text
+entradas/entrada1.txt
+```
+
+Execução:
+
+```bash
+./escalonador entradas/entrada1.txt
+```
+
+Resultado:
+
+```text
+21|21|20|16|NUF
+```
+
+### Entrada 2
+
+Arquivo:
+
+```text
+entradas/entrada2.txt
+```
+
+Execução:
+
+```bash
+./escalonador entradas/entrada2.txt
+```
+
+Resultado:
+
+```text
+13|12|14|9|LRU
+```
+
+### Entrada 3
+
+Arquivo:
+
+```text
+entradas/entrada3.txt
+```
+
+Execução:
+
+```bash
+./escalonador entradas/entrada3.txt
+```
+
+Resultado:
+
+```text
+4|4|7|3|empate
+```
+
+---
+
+## Resumo dos resultados
+
+```text
+entradaMemoria.txt → 38|40|38|27|empate
+entrada1.txt       → 21|21|20|16|NUF
+entrada2.txt       → 13|12|14|9|LRU
+entrada3.txt       → 4|4|7|3|empate
+```
+
+---
+
+## Modo silencioso
+
+Para executar uma entrada no modo silencioso, adicione a palavra `silencioso` depois do caminho do arquivo.
+
+Exemplo:
+
+```bash
+./escalonador entradas/entrada1.txt silencioso
+```
+
+Nesse modo, o programa não mostra todos os ciclos da execução, mas continua apresentando o resultado dos processos e a linha final dos algoritmos de memória.
 
 ---
 
@@ -438,6 +557,12 @@ rm -f escalonador
 ```
 
 O executável não precisa ser colocado dentro do arquivo compactado da entrega.
+
+Também podem ser removidos arquivos de objeto, caso existam:
+
+```bash
+rm -f *.o
+```
 
 ---
 

@@ -31,7 +31,7 @@ typedef struct {
     // Ultimo momento em que ela foi usada
     int ultimoAcesso;
 
-    // Quantas vezes ela foi usada desde que entrou
+    // Quantas vezes a pagina foi usada no total
     int quantidadeAcessos;
 } Moldura;
 
@@ -45,7 +45,38 @@ typedef struct {
 
     // Quantos acessos dele ainda faltam
     int acessosRestantes;
+
+    // Quantidade de paginas que o processo possui
+    int quantidadePaginas;
+
+    // Guarda o total de acessos de cada pagina
+    // O indice 0 representa a pagina 1
+    int *quantidadeAcessosPorPagina;
 } ControleProcessoMemoria;
+
+// Libera os controles e os contadores de paginas
+static void destruirControlesDosProcessos(
+    ControleProcessoMemoria controles[],
+    int quantidadeControles
+) {
+    int i;
+
+    if (controles == NULL) {
+        return;
+    }
+
+    i = 0;
+
+    while (i < quantidadeControles) {
+        if (controles[i].quantidadeAcessosPorPagina != NULL) {
+            free(controles[i].quantidadeAcessosPorPagina);
+        }
+
+        i++;
+    }
+
+    free(controles);
+}
 
 // Deixa uma moldura vazia
 static void limparMoldura(Moldura *moldura) {
@@ -154,7 +185,9 @@ static ControleProcessoMemoria *criarControlesDosProcessos(
     ControleProcessoMemoria *controles;
     NoRN *noAtual;
     Processo *processo;
+    int quantidadePaginas;
     int posicao;
+    int i;
 
     if (quantidadeControles != NULL) {
         *quantidadeControles = 0;
@@ -181,6 +214,14 @@ static ControleProcessoMemoria *criarControlesDosProcessos(
         return NULL;
     }
 
+    // Deixa os ponteiros nulos para poder liberar tudo se der erro
+    i = 0;
+
+    while (i < processosPorPid->quantidade) {
+        controles[i].quantidadeAcessosPorPagina = NULL;
+        i++;
+    }
+
     posicao = 0;
     noAtual = obterMenorNo(processosPorPid);
 
@@ -198,8 +239,37 @@ static ControleProcessoMemoria *criarControlesDosProcessos(
         controles[posicao].acessosRestantes =
             processo->quantidadeAcessos;
 
-        if (controles[posicao].limiteMolduras <= 0) {
-            free(controles);
+        quantidadePaginas = calcularQuantidadePaginas(
+            processo,
+            configuracao
+        );
+
+        controles[posicao].quantidadePaginas =
+            quantidadePaginas;
+
+        if (
+            controles[posicao].limiteMolduras <= 0 ||
+            quantidadePaginas <= 0
+        ) {
+            destruirControlesDosProcessos(
+                controles,
+                processosPorPid->quantidade
+            );
+            return NULL;
+        }
+
+        controles[posicao].quantidadeAcessosPorPagina = calloc(
+            quantidadePaginas,
+            sizeof(int)
+        );
+
+        if (
+            controles[posicao].quantidadeAcessosPorPagina == NULL
+        ) {
+            destruirControlesDosProcessos(
+                controles,
+                processosPorPid->quantidade
+            );
             return NULL;
         }
 
@@ -328,7 +398,8 @@ static void colocarPaginaNaMoldura(
     Moldura *moldura,
     int pid,
     int pagina,
-    int momento
+    int momento,
+    int quantidadeAcessos
 ) {
     if (moldura == NULL) {
         return;
@@ -339,7 +410,9 @@ static void colocarPaginaNaMoldura(
     moldura->pagina = pagina;
     moldura->momentoEntrada = momento;
     moldura->ultimoAcesso = momento;
-    moldura->quantidadeAcessos = 1;
+
+    // Recebe o total acumulado da pagina
+    moldura->quantidadeAcessos = quantidadeAcessos;
 }
 
 // Diz se uma moldura pode entrar na escolha da vitima
@@ -727,6 +800,7 @@ static int executarUmAlgoritmo(
     int posicaoVitima;
     int moldurasDoProcesso;
     int processoChegouNoLimite;
+    int quantidadeAcessosDaPagina;
     int i;
     int trocas;
 
@@ -797,7 +871,10 @@ static int executarUmAlgoritmo(
                 acesso->pid
             );
 
-            free(controles);
+            destruirControlesDosProcessos(
+                controles,
+                quantidadeControles
+            );
             free(molduras);
             return 0;
         }
@@ -808,10 +885,41 @@ static int executarUmAlgoritmo(
                 acesso->pid
             );
 
-            free(controles);
+            destruirControlesDosProcessos(
+                controles,
+                quantidadeControles
+            );
             free(molduras);
             return 0;
         }
+
+        if (
+            acesso->pagina <= 0 ||
+            acesso->pagina > controleAtual->quantidadePaginas
+        ) {
+            printf(
+                "Erro: pagina %d invalida para o PID %d.\n",
+                acesso->pagina,
+                acesso->pid
+            );
+
+            destruirControlesDosProcessos(
+                controles,
+                quantidadeControles
+            );
+            free(molduras);
+            return 0;
+        }
+
+        // O contador pertence a pagina, nao a moldura
+        controleAtual->quantidadeAcessosPorPagina[
+            acesso->pagina - 1
+        ]++;
+
+        quantidadeAcessosDaPagina =
+            controleAtual->quantidadeAcessosPorPagina[
+                acesso->pagina - 1
+            ];
 
         posicaoPagina = procurarPaginaNaMemoria(
             molduras,
@@ -823,7 +931,9 @@ static int executarUmAlgoritmo(
         // Se a pagina ja esta na memoria, so atualiza os dados dela
         if (posicaoPagina >= 0) {
             molduras[posicaoPagina].ultimoAcesso = i;
-            molduras[posicaoPagina].quantidadeAcessos++;
+
+            molduras[posicaoPagina].quantidadeAcessos =
+                quantidadeAcessosDaPagina;
         } else {
             moldurasDoProcesso = contarMoldurasDoProcesso(
                 molduras,
@@ -854,7 +964,8 @@ static int executarUmAlgoritmo(
                     &molduras[posicaoVazia],
                     acesso->pid,
                     acesso->pagina,
-                    i
+                    i,
+                    quantidadeAcessosDaPagina
                 );
             } else {
                 posicaoVitima = escolherVitima(
@@ -874,7 +985,10 @@ static int executarUmAlgoritmo(
                         i
                     );
 
-                    free(controles);
+                    destruirControlesDosProcessos(
+                        controles,
+                        quantidadeControles
+                    );
                     free(molduras);
                     return 0;
                 }
@@ -885,7 +999,8 @@ static int executarUmAlgoritmo(
                     &molduras[posicaoVitima],
                     acesso->pid,
                     acesso->pagina,
-                    i
+                    i,
+                    quantidadeAcessosDaPagina
                 );
 
                 trocas++;
@@ -915,14 +1030,20 @@ static int executarUmAlgoritmo(
     ) {
         printf("Erro: o historico terminou antes dos acessos dos processos.\n");
 
-        free(controles);
+        destruirControlesDosProcessos(
+            controles,
+            quantidadeControles
+        );
         free(molduras);
         return 0;
     }
 
     *quantidadeTrocas = trocas;
 
-    free(controles);
+    destruirControlesDosProcessos(
+        controles,
+        quantidadeControles
+    );
     free(molduras);
 
     return 1;

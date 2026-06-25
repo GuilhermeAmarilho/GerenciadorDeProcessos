@@ -141,7 +141,7 @@ Tempo medio de resposta: 10.00
 Quantidade de acessos de memoria: 76
 
 ================ ALGORITMOS DE MEMORIA ================
-38|40|35|27|NUF
+38|40|38|27|empate
 ```
 
 ---
@@ -856,7 +856,7 @@ Isso confirma a regra de que cada ciclo de CPU produz um acesso à memória.
 Essa linha marca o início do resultado da simulação de memória.
 
 ```text
-38|40|35|27|NUF
+38|40|38|27|empate
 ```
 
 Os valores seguem a ordem:
@@ -870,7 +870,7 @@ Portanto:
 ```text
 FIFO = 38 trocas
 LRU = 40 trocas
-NUF = 35 trocas
+NUF = 38 trocas
 Ótimo = 27 trocas
 ```
 
@@ -881,15 +881,15 @@ Para encontrar o algoritmo mais próximo do Ótimo, o programa calcula:
 ```text
 FIFO: 38 - 27 = 11
 LRU: 40 - 27 = 13
-NUF: 35 - 27 = 8
+NUF: 38 - 27 = 11
 ```
 
-O NUF possui a menor diferença.
+FIFO e NUF possuem a mesma menor diferença.
 
 Por isso, a saída termina com:
 
 ```text
-NUF
+empate
 ```
 
 ---
@@ -919,8 +919,8 @@ Na comparação dos algoritmos de substituição:
 ```text
 FIFO = 38
 LRU = 40
-NUF = 35
+NUF = 38
 Ótimo = 27
 ```
 
-O NUF foi o algoritmo com desempenho mais próximo do Ótimo nessa entrada.
+FIFO e NUF ficaram empatados como os algoritmos com desempenho mais próximo do Ótimo nessa entrada.
