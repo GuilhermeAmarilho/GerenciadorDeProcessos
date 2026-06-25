@@ -26,6 +26,17 @@ A IA não foi usada apenas para copiar uma solução pronta. O código foi sendo
 - CFS
     - Linux Kernel Documentation. CFS Scheduler. Disponível em: https://docs.kernel.org/scheduler/sched-design-CFS.html
     - Essa referência foi usada para entender a ideia geral do CFS, especialmente o uso de uma lógica voltada à distribuição justa da CPU.
+- Algoritmos de substituição de páginas
+    - CASTRO, Márcio. **Algoritmos de Substituição de Páginas**. Universidade Federal de Santa Catarina — UFSC, 2020. Disponível em: https://www.youtube.com/watch?v=mzlaMAV1-wg. Acesso em: 02 jun. 2026.
+    - A referência foi utilizada para revisar o funcionamento dos algoritmos Ótimo, FIFO, LRU e NFU, especialmente os critérios usados para selecionar uma página vítima.
+    - INSTITUTO DE INFORMÁTICA DA UNIVERSIDADE FEDERAL DE GOIÁS. **Sistemas Operacionais — Aula 20 — Memória: Algoritmos de substituição de páginas, LRU, NFU e Working Set Pages**. 2020. Disponível em: https://www.youtube.com/watch?v=kROvxe9ntOQ. Acesso em: 02 jun. 2026.
+    - A referência foi utilizada para complementar o estudo dos algoritmos LRU e NFU e compreender como o histórico e a frequência dos acessos influenciam a substituição de páginas.
+- Árvore rubro-negra
+    - UNIVERSIDADE FEDERAL DO ABC. **Estruturas de Dados Puramente Funcionais — Árvores Rubro-Negras**. Disponível em: https://haskell.pesquisa.ufabc.edu.br/19.q3.eds_funcionais/files/dia01.pdf. Acesso em: 02 jun. 2026.
+    - A referência foi utilizada para estudar as propriedades da árvore rubro-negra, as regras de coloração, a altura máxima, as rotações e o processo de rebalanceamento após inserções.
+    - SAN FELICE, Mário César. **Algoritmos e Estruturas de Dados 2 — Árvores Rubro-Negras**. Universidade Federal de São Carlos — UFSCar. Disponível em: https://www.aloc.ufscar.br/felice/ensino/2023s1aed2/aed2.php. Acesso em: 02 jun. 2026.
+    - A referência foi utilizada para revisar a definição, a inserção, o balanceamento e a implementação de árvores rubro-negras.
+
 
 ## Prompts usados
 
@@ -91,3 +102,23 @@ Na segunda parte do trabalho, a ferramenta também foi utilizada como apoio para
 ### Interpretação dos resultados
 
 - "Me ajude a exmplicar e interpretar a linha final produzida pelo programa e como identificar qual algoritmo ficou mais próximo do algoritmo Ótimo."
+
+### Criação de casos de teste
+
+- "Crie arquivos de entrada que permitam testar os algoritmos FIFO, LRU, NUF e Ótimo, incluindo casos sem troca, casos com substituição de páginas, empates no NUF e diferenças entre as políticas LOCAL e GLOBAL."
+
+### Encontrando bugs
+
+- "Eu estou com um bug no meu código do RoundRobin, mas não consigo encontra-lo. Vou te enviar o arquivo e o Contexto abaixo, e quero que façamos um teste de mesa, rodando linha por linha do código, que nem programar no papel, para encontrar o erro."
+
+### Monte as referências para de forma organizada
+
+- "Com base na lista de links que eu acessei para estudar, quero que você monte um painel de referências no formato .mkd, com data de hoje, 02 de julho, para eu adicionar as referências externas de busca. Os conteúdos que eu estava procurando eram Arvore RubroNegra, Ótimo, FIFO, LRU e NFU.
+
+### Verificação do desempate no NUF
+
+- "Verifique se a implementação do algoritmo NUF respeita a regra do enunciado: quando duas ou mais páginas tiverem a mesma frequência de uso, deve ser substituída a página de menor ID."
+
+### Revisão final do código
+
+- "Faça uma revisão final dos arquivos do projeto procurando erros de lógica, funções não utilizadas, possíveis acessos inválidos à memória e situações em que o programa possa produzir um resultado incorreto."
